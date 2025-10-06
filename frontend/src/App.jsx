@@ -26,9 +26,9 @@ import AddDoctor from './admin/src/pages/Admin/AddDoctor.jsx'
 import DoctorList from './admin/src/pages/Admin/DoctorsList.jsx'
 
 // doctor pages
-import DoctorDashboard from './admin/src/pages/Doctor/DoctorDashboard.jsx'  // if exists
+import DoctorDashboard from './admin/src/pages/Doctor/DoctorDashboard.jsx'  
 import DoctorAppointments from './admin/src/pages/Doctor/DoctorAppointments.jsx'
-import DoctorProfile from './admin/src/pages/Doctor/DoctorProfile.jsx'  // if exists
+import DoctorProfile from './admin/src/pages/Doctor/DoctorProfile.jsx'  
 
 const App = () => {
   return (
