@@ -7,7 +7,7 @@
 - **Frontend**: React.js
 - **Backend**: Node.js, Express.js
 - **Database**: MongoDB
-- **Payment Gateways**: Stripe, Razorpay
+- **Payment Gateways**: Stripe, easypaisa and jazzcash
 - **Authentication**: JSON Web Token (JWT)
 
 ## 🔑 Key Features
@@ -17,7 +17,7 @@
 - **Patient Login**: 
   - Patients can sign up, log in, and book appointments with doctors.
   - Manage appointments (view, cancel, or reschedule).
-  - Secure online payment options available (cash, Stripe, Razorpay).
+  - Secure online payment options available (cash, Stripe, easypaisa and jazzcash).
   - User profile with editable information (name, email, address, gender, birthday, profile picture).
 
 - **Doctor Login**:
@@ -66,7 +66,7 @@
 - Displays detailed information about the selected doctor:
   - **Profile picture, qualification, experience**, and a brief description.
   - **Appointment booking form**: Choose date, time, and payment method.
-  - Online payment options: **Cash, Stripe, or Razorpay**.
+  - Online payment options: **Cash, Stripe, easypaisa and jazzcash**.
   - **Related doctors** section at the bottom.
 - Users need to **create an account or log in** before booking an appointment.
 
