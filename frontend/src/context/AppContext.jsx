@@ -11,29 +11,30 @@ const AppContextProvider = (props) => {
 
   const [doctors, setDoctors] = useState([]);
   const [token, setToken] = useState(localStorage.getItem('token') || '');
-  const [userData, setUserData] = useState(false);
+  const [userData, setUserData] = useState(null);
 
-  // Get Doctors from API
+  // Fetch doctors from backend
   const getDoctorsData = async () => {
     try {
-      const { data } = await axios.get(backendUrl + '/api/doctor/list');
-      if (data.success && data.doctors.length > 0) {
+      const { data } = await axios.get(`${backendUrl}/api/doctor/list`);
+      if (data?.success && Array.isArray(data.doctors) && data.doctors.length > 0) {
         setDoctors(data.doctors);
       } else {
-        console.warn("Using static doctors fallback...");
-        setDoctors(staticDoctors); // fallback
+        console.warn("No doctors found from API, using static fallback...");
+        setDoctors(staticDoctors);
       }
     } catch (error) {
-      console.log(error);
-      toast.error(error.message);
-      setDoctors(staticDoctors); // fallback
+      console.error("Failed to fetch doctors:", error.message);
+      toast.error("Failed to fetch doctors. Showing default list.");
+      setDoctors(staticDoctors);
     }
   };
 
-  // Get User Profile
+  // Fetch logged-in user profile
   const loadUserProfileData = async () => {
+    if (!token) return;
     try {
-      const { data } = await axios.get(backendUrl + '/api/user/get-profile', {
+      const { data } = await axios.get(`${backendUrl}/api/user/get-profile`, {
         headers: { token },
       });
       if (data.success) {
@@ -42,8 +43,8 @@ const AppContextProvider = (props) => {
         toast.error(data.message);
       }
     } catch (error) {
-      console.log(error);
-      toast.error(error.message);
+      console.error("Failed to fetch user profile:", error.message);
+      toast.error("Failed to fetch user profile.");
     }
   };
 
@@ -52,7 +53,7 @@ const AppContextProvider = (props) => {
   }, []);
 
   useEffect(() => {
-    if (token) loadUserProfileData();
+    loadUserProfileData();
   }, [token]);
 
   const value = {
@@ -68,7 +69,9 @@ const AppContextProvider = (props) => {
   };
 
   return (
-    <AppContext.Provider value={value}>{props.children}</AppContext.Provider>
+    <AppContext.Provider value={value}>
+      {props.children}
+    </AppContext.Provider>
   );
 };
 
