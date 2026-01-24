@@ -88,212 +88,212 @@ export const specialityData = [
 export const doctors = [
     {
         _id: 'doc1',
-        name: 'Dr. Richard James',
+        name: 'Dr. Ahmed Khan',
         image: doc1,
         speciality: 'General Physician',
-        degree: 'MBBS',
+        degree: 'MBBS, FCPS',
         experience: '4 Years',
-        about: 'Dr. Davis has a strong commitment to delivering comprehensive medical care, focusing on preventive medicine, early diagnosis, and effective treatment strategies. Dr. Davis has a strong commitment to delivering comprehensive medical care, focusing on preventive medicine, early diagnosis, and effective treatment strategies.',
-        fees: 50,
+        about: 'Dr. Ahmed Khan is a dedicated general physician with extensive experience in primary care. He specializes in preventive medicine, chronic disease management, and provides comprehensive healthcare services to patients of all ages.',
+        fees: 1500,
         address: {
-            line1: '17th Cross, Richmond',
-            line2: 'Circle, Ring Road, London'
+            line1: 'DHA Medical Center, Phase 5',
+            line2: 'Lahore, Punjab'
         }
     },
     {
         _id: 'doc2',
-        name: 'Dr. Emily Larson',
+        name: 'Dr. Fatima Zahra',
         image: doc2,
         speciality: 'Gynecologist',
-        degree: 'MBBS',
+        degree: 'MBBS, FCPS (Gynae)',
         experience: '3 Years',
-        about: 'Dr. Davis has a strong commitment to delivering comprehensive medical care, focusing on preventive medicine, early diagnosis, and effective treatment strategies.',
-        fees: 60,
+        about: 'Dr. Fatima Zahra is a compassionate gynecologist specializing in women\'s health, prenatal care, and reproductive medicine. She is committed to providing personalized care to women at all stages of life.',
+        fees: 2000,
         address: {
-            line1: '27th Cross, Richmond',
-            line2: 'Circle, Ring Road, London'
+            line1: 'Islamabad Medical Complex',
+            line2: 'Sector F-8, Islamabad'
         }
     },
     {
         _id: 'doc3',
-        name: 'Dr. Sarah Patel',
+        name: 'Dr. Ayesha Siddiqui',
         image: doc3,
         speciality: 'Dermatologist',
-        degree: 'MBBS',
+        degree: 'MBBS, MCPS (Dermatology)',
         experience: '1 Years',
-        about: 'Dr. Davis has a strong commitment to delivering comprehensive medical care, focusing on preventive medicine, early diagnosis, and effective treatment strategies.',
-        fees: 30,
+        about: 'Dr. Ayesha Siddiqui is a skilled dermatologist specializing in medical and cosmetic dermatology. She provides expert treatment for skin conditions and offers advanced aesthetic procedures.',
+        fees: 1200,
         address: {
-            line1: '37th Cross, Richmond',
-            line2: 'Circle, Ring Road, London'
+            line1: 'Skin Care Clinic',
+            line2: 'Clifton, Karachi'
         }
     },
     {
         _id: 'doc4',
-        name: 'Dr. Christopher Lee',
+        name: 'Dr. Muhammad Ali',
         image: doc4,
         speciality: 'Pediatricians',
-        degree: 'MBBS',
+        degree: 'MBBS, DCH',
         experience: '2 Years',
-        about: 'Dr. Davis has a strong commitment to delivering comprehensive medical care, focusing on preventive medicine, early diagnosis, and effective treatment strategies.',
-        fees: 40,
+        about: 'Dr. Muhammad Ali is a caring pediatrician dedicated to children\'s health and well-being. He specializes in pediatric care, vaccinations, and child development monitoring.',
+        fees: 1000,
         address: {
-            line1: '47th Cross, Richmond',
-            line2: 'Circle, Ring Road, London'
+            line1: 'Children\'s Hospital',
+            line2: 'Gulshan-e-Iqbal, Karachi'
         }
     },
     {
         _id: 'doc5',
-        name: 'Dr. Jennifer Garcia',
+        name: 'Dr. Sara Hassan',
         image: doc5,
         speciality: 'Neurologist',
-        degree: 'MBBS',
+        degree: 'MBBS, FCPS (Neurology)',
         experience: '4 Years',
-        about: 'Dr. Davis has a strong commitment to delivering comprehensive medical care, focusing on preventive medicine, early diagnosis, and effective treatment strategies.',
-        fees: 50,
+        about: 'Dr. Sara Hassan is an experienced neurologist specializing in the diagnosis and treatment of neurological disorders. She has expertise in stroke management, epilepsy, and neurodegenerative diseases.',
+        fees: 2500,
         address: {
-            line1: '57th Cross, Richmond',
-            line2: 'Circle, Ring Road, London'
+            line1: 'Neuro Care Center',
+            line2: 'Blue Area, Islamabad'
         }
     },
     {
         _id: 'doc6',
-        name: 'Dr. Andrew Williams',
+        name: 'Dr. Bilal Ahmed',
         image: doc6,
         speciality: 'Neurologist',
-        degree: 'MBBS',
+        degree: 'MBBS, MRCP (Neurology)',
         experience: '4 Years',
-        about: 'Dr. Davis has a strong commitment to delivering comprehensive medical care, focusing on preventive medicine, early diagnosis, and effective treatment strategies.',
-        fees: 50,
+        about: 'Dr. Bilal Ahmed is a renowned neurologist with expertise in treating complex neurological conditions. He specializes in movement disorders, headaches, and neurocritical care.',
+        fees: 2500,
         address: {
-            line1: '57th Cross, Richmond',
-            line2: 'Circle, Ring Road, London'
+            line1: 'Aga Khan Hospital',
+            line2: 'Karachi, Sindh'
         }
     },
     {
         _id: 'doc7',
-        name: 'Dr. Christopher Davis',
+        name: 'Dr. Omar Farooq',
         image: doc7,
         speciality: 'General Physician',
-        degree: 'MBBS',
+        degree: 'MBBS, MCPS',
         experience: '4 Years',
-        about: 'Dr. Davis has a strong commitment to delivering comprehensive medical care, focusing on preventive medicine, early diagnosis, and effective treatment strategies.',
-        fees: 50,
+        about: 'Dr. Omar Farooq is a dedicated general physician with expertise in internal medicine. He provides comprehensive healthcare services with a focus on preventive care and health education.',
+        fees: 1500,
         address: {
-            line1: '17th Cross, Richmond',
-            line2: 'Circle, Ring Road, London'
+            line1: 'Medical Center',
+            line2: 'Model Town, Lahore'
         }
     },
     {
         _id: 'doc8',
-        name: 'Dr. Timothy White',
+        name: 'Dr. Khadija Rehman',
         image: doc8,
         speciality: 'Gynecologist',
-        degree: 'MBBS',
+        degree: 'MBBS, MRCOG',
         experience: '3 Years',
-        about: 'Dr. Davis has a strong commitment to delivering comprehensive medical care, focusing on preventive medicine, early diagnosis, and effective treatment strategies.',
-        fees: 60,
+        about: 'Dr. Khadija Rehman is a skilled gynecologist specializing in high-risk pregnancies, infertility treatments, and minimally invasive gynecological surgeries.',
+        fees: 2000,
         address: {
-            line1: '27th Cross, Richmond',
-            line2: 'Circle, Ring Road, London'
+            line1: 'Women\'s Health Center',
+            line2: 'Defense Housing Authority, Lahore'
         }
     },
     {
         _id: 'doc9',
-        name: 'Dr. Ava Mitchell',
+        name: 'Dr. Mariam Yousuf',
         image: doc9,
         speciality: 'Dermatologist',
-        degree: 'MBBS',
+        degree: 'MBBS, FCPS (Dermatology)',
         experience: '1 Years',
-        about: 'Dr. Davis has a strong commitment to delivering comprehensive medical care, focusing on preventive medicine, early diagnosis, and effective treatment strategies.',
-        fees: 30,
+        about: 'Dr. Mariam Yousuf is a talented dermatologist specializing in cosmetic dermatology, laser treatments, and advanced skin care procedures.',
+        fees: 1200,
         address: {
-            line1: '37th Cross, Richmond',
-            line2: 'Circle, Ring Road, London'
+            line1: 'Laser & Skin Clinic',
+            line2: 'Bahria Town, Islamabad'
         }
     },
     {
         _id: 'doc10',
-        name: 'Dr. Jeffrey King',
+        name: 'Dr. Hamza Malik',
         image: doc10,
         speciality: 'Pediatricians',
-        degree: 'MBBS',
+        degree: 'MBBS, DCH, FCPS',
         experience: '2 Years',
-        about: 'Dr. Davis has a strong commitment to delivering comprehensive medical care, focusing on preventive medicine, early diagnosis, and effective treatment strategies.',
-        fees: 40,
+        about: 'Dr. Hamza Malik is a dedicated pediatrician with expertise in pediatric emergency care and child nutrition. He is passionate about promoting children\'s health and development.',
+        fees: 1000,
         address: {
-            line1: '47th Cross, Richmond',
-            line2: 'Circle, Ring Road, London'
+            line1: 'Kids Care Hospital',
+            line2: 'Gulberg, Lahore'
         }
     },
     {
         _id: 'doc11',
-        name: 'Dr. Zoe Kelly',
+        name: 'Dr. Zainab Abbas',
         image: doc11,
         speciality: 'Neurologist',
-        degree: 'MBBS',
+        degree: 'MBBS, FCPS (Neurology)',
         experience: '4 Years',
-        about: 'Dr. Davis has a strong commitment to delivering comprehensive medical care, focusing on preventive medicine, early diagnosis, and effective treatment strategies.',
-        fees: 50,
+        about: 'Dr. Zainab Abbas is an expert neurologist specializing in neurophysiology, epilepsy management, and sleep disorders. She is committed to providing comprehensive neurological care.',
+        fees: 2500,
         address: {
-            line1: '57th Cross, Richmond',
-            line2: 'Circle, Ring Road, London'
+            line1: 'Neurology Institute',
+            line2: 'PECHS, Karachi'
         }
     },
     {
         _id: 'doc12',
-        name: 'Dr. Patrick Harris',
+        name: 'Dr. Usman Ghani',
         image: doc12,
         speciality: 'Neurologist',
-        degree: 'MBBS',
+        degree: 'MBBS, FRCP (Neurology)',
         experience: '4 Years',
-        about: 'Dr. Davis has a strong commitment to delivering comprehensive medical care, focusing on preventive medicine, early diagnosis, and effective treatment strategies.',
-        fees: 50,
+        about: 'Dr. Usman Ghani is a highly experienced neurologist with expertise in stroke care, multiple sclerosis, and neuroimmunology. He is known for his patient-centered approach.',
+        fees: 2500,
         address: {
-            line1: '57th Cross, Richmond',
-            line2: 'Circle, Ring Road, London'
+            line1: 'Shifa International Hospital',
+            line2: 'Islamabad'
         }
     },
     {
         _id: 'doc13',
-        name: 'Dr. Chloe Evans',
+        name: 'Dr. Hira Tariq',
         image: doc13,
         speciality: 'General Physician',
-        degree: 'MBBS',
+        degree: 'MBBS, ACP',
         experience: '4 Years',
-        about: 'Dr. Davis has a strong commitment to delivering comprehensive medical care, focusing on preventive medicine, early diagnosis, and effective treatment strategies.',
-        fees: 50,
+        about: 'Dr. Hira Tariq is a compassionate general physician with expertise in family medicine, chronic disease management, and preventive healthcare.',
+        fees: 1500,
         address: {
-            line1: '17th Cross, Richmond',
-            line2: 'Circle, Ring Road, London'
+            line1: 'Family Health Clinic',
+            line2: 'Faisalabad, Punjab'
         }
     },
     {
         _id: 'doc14',
-        name: 'Dr. Ryan Martinez',
+        name: 'Dr. Ali Raza',
         image: doc14,
         speciality: 'Gynecologist',
-        degree: 'MBBS',
+        degree: 'MBBS, FCPS (Gynae & Obs)',
         experience: '3 Years',
-        about: 'Dr. Davis has a strong commitment to delivering comprehensive medical care, focusing on preventive medicine, early diagnosis, and effective treatment strategies.',
-        fees: 60,
+        about: 'Dr. Ali Raza is a skilled gynecologist specializing in reproductive medicine, laparoscopic surgeries, and high-risk obstetrics.',
+        fees: 2000,
         address: {
-            line1: '27th Cross, Richmond',
-            line2: 'Circle, Ring Road, London'
+            line1: 'Maternity & Child Care Hospital',
+            line2: 'Rawalpindi, Punjab'
         }
     },
     {
         _id: 'doc15',
-        name: 'Dr. Amelia Hill',
+        name: 'Dr. Sana Khan',
         image: doc15,
         speciality: 'Dermatologist',
-        degree: 'MBBS',
+        degree: 'MBBS, DDVL',
         experience: '1 Years',
-        about: 'Dr. Davis has a strong commitment to delivering comprehensive medical care, focusing on preventive medicine, early diagnosis, and effective treatment strategies.',
-        fees: 30,
+        about: 'Dr. Sana Khan is a dedicated dermatologist specializing in medical dermatology, aesthetic procedures, and skin rejuvenation treatments.',
+        fees: 1200,
         address: {
-            line1: '37th Cross, Richmond',
-            line2: 'Circle, Ring Road, London'
+            line1: 'Derma Care Clinic',
+            line2: 'Johar Town, Lahore'
         }
     },
 ]

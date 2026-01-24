@@ -1,12 +1,15 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useContext } from 'react';
 import { assets } from '../assets/assets';
+import { AppContext } from '../context/AppContext';
+import axios from 'axios';
 
 const AIChatbot = () => {
+  const { backendUrl } = useContext(AppContext);
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([
     { 
       type: 'bot', 
-      text: 'Hello! I\'m your medical assistant. I can help you with:\n• Finding doctors by specialty\n• Booking appointments\n• Answering general health questions\n• Providing medication information\n\nHow can I assist you today?' 
+      text: 'Hello! I\'m your medical assistant. I can help you with:\n• Finding doctors by specialty\n• Booking appointments\n• Answering general health questions\n• Providing medication information\n• General conversation\n\nHow can I assist you today?' 
     }
   ]);
   const [inputMessage, setInputMessage] = useState('');
@@ -21,48 +24,6 @@ const AIChatbot = () => {
     scrollToBottom();
   }, [messages]);
 
-  const generateBotResponse = (userMessage) => {
-    const lowerMessage = userMessage.toLowerCase();
-    
-    // Appointment booking
-    if (lowerMessage.includes('book') || lowerMessage.includes('appointment')) {
-      return "I can help you book an appointment! Please visit our doctors page to select a specialist, or tell me what type of doctor you need and I'll guide you there.";
-    }
-    
-    // Find doctors
-    if (lowerMessage.includes('doctor') || lowerMessage.includes('specialist')) {
-      return "We have excellent doctors across various specialties including General Physicians, Gynecologists, Dermatologists, Pediatricians, Neurologists, and Gastroenterologists. Would you like me to show you our doctors list?";
-    }
-    
-    // Symptoms
-    if (lowerMessage.includes('fever') || lowerMessage.includes('headache') || lowerMessage.includes('pain')) {
-      return "I understand you're experiencing symptoms. While I can provide general information, it's always best to consult with a qualified doctor for proper diagnosis and treatment. Would you like me to help you book an appointment with a general physician?";
-    }
-    
-    // Medicine information
-    if (lowerMessage.includes('medicine') || lowerMessage.includes('medication')) {
-      return "For medication information, it's important to consult with healthcare professionals. Our doctors can provide proper guidance based on your specific condition. Would you like to schedule a consultation?";
-    }
-    
-    // Emergency
-    if (lowerMessage.includes('emergency') || lowerMessage.includes('urgent')) {
-      return "For medical emergencies, please call emergency services immediately or visit the nearest hospital emergency room. If this is not an emergency, I can help you schedule an appointment.";
-    }
-    
-    // Contact info
-    if (lowerMessage.includes('contact') || lowerMessage.includes('phone') || lowerMessage.includes('address')) {
-      return "You can reach us at:\n📞 Phone: +92 300 1234567\n📧 Email: info@prescription.com\n📍 Address: 123 Medical Street, Healthcare City\n\nOr visit our contact page for more details.";
-    }
-    
-    // Working hours
-    if (lowerMessage.includes('hours') || lowerMessage.includes('timing') || lowerMessage.includes('open')) {
-      return "Our clinic hours are:\nMonday - Friday: 9:00 AM - 8:00 PM\nSaturday: 10:00 AM - 6:00 PM\nSunday: 10:00 AM - 4:00 PM\n\nEmergency services available 24/7.";
-    }
-    
-    // Default response
-    return "I'm here to help with your medical needs! You can ask me about:\n• Booking appointments\n• Finding specialists\n• General health information\n• Clinic services\n• Contact details\n\nWhat would you like to know?";
-  };
-
   const sendMessage = async () => {
     if (!inputMessage.trim()) return;
 
@@ -71,13 +32,32 @@ const AIChatbot = () => {
     setInputMessage('');
     setIsTyping(true);
 
-    // Simulate bot thinking time
-    setTimeout(() => {
-      const botResponse = generateBotResponse(inputMessage);
-      const botMsg = { type: 'bot', text: botResponse };
+    try {
+      // Call backend AI API
+      console.log("Sending message to backend:", inputMessage);
+      console.log("Backend URL:", backendUrl);
+      
+      const { data } = await axios.post(`${backendUrl}/api/user/ai-chat`, {
+        message: inputMessage
+      });
+
+      console.log("Backend response:", data);
+
+      if (data.success) {
+        const botMsg = { type: 'bot', text: data.response };
+        setMessages(prev => [...prev, botMsg]);
+      } else {
+        throw new Error(data.message);
+      }
+    } catch (error) {
+      console.error("AI Chat Error:", error);
+      console.error("Error details:", error.response?.data);
+      // Fallback to default response
+      const botMsg = { type: 'bot', text: "I'm having trouble connecting right now. Please try again later or contact our support team." };
       setMessages(prev => [...prev, botMsg]);
+    } finally {
       setIsTyping(false);
-    }, 1000 + Math.random() * 1000);
+    }
   };
 
   const handleKeyPress = (e) => {
