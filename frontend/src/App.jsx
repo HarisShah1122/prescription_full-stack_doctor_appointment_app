@@ -7,6 +7,7 @@ import 'react-toastify/dist/ReactToastify.css'
 import Navbar from './components/Navbar'
 import Sidebar from "./admin/src/components/Sidebar"
 import Footer from './components/Footer'
+import AIChatbot from './components/AIChatbot'
 
 // user pages
 import Home from './pages/Home'
@@ -62,6 +63,7 @@ const App = () => {
       </Routes>
 
       <Footer />
+      <AIChatbot />
     </div>
   )
 }

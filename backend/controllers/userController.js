@@ -245,11 +245,6 @@ const listAppointment = async (req, res) => {
     }
 };
 
-// ------------------- Razorpay Payment -------------------
-// Add your Razorpay instance if using Razorpay
-let razorpayInstance; // Initialize elsewhere if needed
-const paymentRazorpay = async (req, res) => { /* Implement as before */ };
-const verifyRazorpay = async (req, res) => { /* Implement as before */ };
 
 // ------------------- Exports -------------------
 export {
@@ -262,8 +257,6 @@ export {
     cancelAppointment,
     paymentEasyPaisa,
     paymentJazzCash,
-    paymentRazorpay,
-    verifyRazorpay,
     paymentStripe,
     verifyStripe
 };
