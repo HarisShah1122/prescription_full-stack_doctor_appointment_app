@@ -1,170 +1,231 @@
-# Prescripto - Doctor Appointment Web App
+# 🏥 Prescription Full-Stack Doctor Appointment App
 
-**Prescripto** is a full-stack web application designed to make healthcare more accessible by simplifying the process of booking doctor appointments. It offers three levels of login: **Patient**, **Doctor**, and **Admin**, each with distinct features tailored to their roles. The app integrates **online payment gateways (Stripe and Razorpay)** to facilitate seamless and secure payments. Built using the **MERN stack** (MongoDB, Express.js, React.js, and Node.js), Prescripto provides an efficient, user-friendly experience for both patients and healthcare providers.
+**Prescription** is a modern, AI-powered full-stack medical appointment booking platform that makes healthcare more accessible through intelligent automation and seamless user experience. The application features three distinct user roles (Patient, Doctor, and Admin) and includes an advanced AI medical assistant to guide users 24/7.
+
+## ✨ Key Features
+
+### 🤖 AI Medical Assistant (NEW!)
+- **Smart Chatbot**: Intelligent medical assistant available 24/7 on every page
+- **Symptom Guidance**: Provides general health information and recommendations
+- **Appointment Booking**: AI-assisted appointment scheduling and doctor recommendations
+- **Emergency Support**: Guides users to appropriate emergency services
+- **Clinic Information**: Hours, contact details, and service information
+- **Context-Aware Responses**: Intelligent responses based on user queries
+
+### 👥 Multi-Role Authentication
+
+#### Patient Portal
+- **Easy Registration**: Quick and secure user signup with email verification
+- **Doctor Search**: Find doctors by specialty, availability, and location
+- **Online Booking**: Schedule appointments with preferred doctors
+- **Appointment Management**: View, cancel, and track appointment history
+- **Profile Management**: Update personal information and medical history
+- **Secure Payments**: Multiple payment options (Stripe, EasyPaisa, JazzCash)
+
+#### Doctor Dashboard
+- **Personal Dashboard**: Manage appointments and patient information
+- **Schedule Management**: Set availability and working hours
+- **Earnings Tracking**: Monitor revenue from completed appointments
+- **Profile Customization**: Update professional information and specialties
+- **Patient Communication**: View appointment details and patient history
+
+#### Admin Panel
+- **Doctor Management**: Add, edit, and manage doctor profiles
+- **Appointment Oversight**: View all appointments and schedules
+- **User Management**: Monitor and manage user accounts
+- **Analytics Dashboard**: Track platform usage and statistics
+- **System Control**: Manage platform settings and configurations
+
+### 💳 Payment Integration
+- **Multiple Payment Options**: Stripe, EasyPaisa, JazzCash
+- **Secure Transactions**: Encrypted payment processing
+- **Currency Support**: PKR and international currencies
+- **Payment Tracking**: Complete payment history and receipts
 
 ## 🛠️ Tech Stack
 
-- **Frontend**: React.js
-- **Backend**: Node.js, Express.js
-- **Database**: MongoDB
-- **Payment Gateways**: Stripe, easypaisa and jazzcash
-- **Authentication**: JSON Web Token (JWT)
+### Frontend
+- **React 18**: Modern UI with hooks and context API
+- **React Router**: Client-side routing and navigation
+- **Tailwind CSS**: Utility-first styling framework
+- **React Toastify**: User-friendly notifications
+- **Axios**: HTTP client for API communication
+- **Vite**: Fast development server and build tool
 
-## 🔑 Key Features
+### Backend
+- **Node.js**: Server runtime environment
+- **Express.js**: Web application framework
+- **MongoDB**: NoSQL database for data storage
+- **Mongoose**: Object data modeling for MongoDB
+- **JWT**: Secure authentication tokens
+- **Cloudinary**: Cloud-based image storage
+- **Stripe**: Payment processing platform
+- **bcrypt**: Password hashing and security
 
-### 1. Three-Level Authentication
+### Development Tools
+- **Nodemon**: Auto-restart development server
+- **ESLint**: Code quality and linting
+- **Git**: Version control system
 
-- **Patient Login**: 
-  - Patients can sign up, log in, and book appointments with doctors.
-  - Manage appointments (view, cancel, or reschedule).
-  - Secure online payment options available (cash, Stripe, easypaisa and jazzcash).
-  - User profile with editable information (name, email, address, gender, birthday, profile picture).
+## 🚀 Getting Started
 
-- **Doctor Login**:
-  - Doctors can log in and manage appointments.
-  - Dashboard displays earnings, number of patients, number of appointments, and latest bookings.
-  - Update profile details (description, fees, address, availability status).
-  - View appointment details (patient info, payment mode, appointment status).
+### Prerequisites
+- Node.js 18+ installed
+- MongoDB 6.0+ running locally or cloud instance
+- Git for version control
 
-- **Admin Login**:
-  - Admins can create and manage doctor profiles.
-  - Dashboard with analytics: total doctors, total appointments, total patients, and recent bookings.
-  - Add new doctors (image, specialty, degree, experience, address, fees, etc.).
-  - View and manage all appointments (cancel or mark as completed).
-
-## 🏠 Home Page
-
-- Features a user-friendly layout where users can:
-  - **Search for doctors** based on specialties.
-  - **View top doctors** and their profiles.
-  - Explore additional sections: About Us, Delivery Information, Privacy Policy, and Get in Touch.
-- **Footer** includes navigation links: Home, About Us, Delivery Info, Privacy Policy, Contact Us.
-
-## 🩺 All Doctors Page
-
-- Lists all available doctors.
-- Users can **filter doctors by specialty**.
-- Clicking on a doctor's profile redirects to the **Doctor Appointment Page**.
-
-## 📄 About Page
-
-- Provides information about **Prescripto’s vision** and mission.
-- **Why Choose Us** section highlights:
-  - **Efficiency**: Streamlined appointment process.
-  - **Convenience**: Online booking and payment.
-  - **Personalization**: Tailored experience based on user preferences.
-- Footer section with additional links.
-
-## 📞 Contact Page
-
-- Contains **office address** and contact details.
-- Section to explore job opportunities.
-- Footer navigation links.
-
-## 📅 Doctor Appointment Page
-
-- Displays detailed information about the selected doctor:
-  - **Profile picture, qualification, experience**, and a brief description.
-  - **Appointment booking form**: Choose date, time, and payment method.
-  - Online payment options: **Cash, Stripe, easypaisa and jazzcash**.
-  - **Related doctors** section at the bottom.
-- Users need to **create an account or log in** before booking an appointment.
-
-## 👤 User Profile
-
-- Accessible after login.
-- Users can view and edit their profile:
-  - **Upload profile picture**.
-  - Update **name, email, address, gender, and birthday**.
-- View list of upcoming and past appointments.
-- **Logout** option available.
-
-## 🗄️ Admin Panel
-
-- **Dashboard**:
-  - Displays statistics: **Number of doctors**, **appointments**, **patients**, and **latest bookings**.
-  - Option to **cancel bookings** if needed.
-- **Add Doctor**:
-  - Form to add a new doctor profile (image, specialty, email, password, degree, address, experience, fees, description).
-- **Doctor List**:
-  - View all registered doctors with options to edit or delete profiles.
-- **Appointments**:
-  - List of all appointments including patient name, age, date, time, doctor name, fees.
-  - Admin actions: **Cancel** or **Mark as Completed**.
-
-## 🩺 Doctor Dashboard
-
-- **Earnings Overview**:
-  - Total earnings from completed appointments.
-- **Appointments List**:
-  - View detailed list of patient appointments (name, age, date, time, payment mode, status).
-  - Actions: **Mark appointment as completed** or **Cancel appointment**.
-- **Profile Management**:
-  - Doctors can update their **profile information**, including description, fees, address, and availability status.
-
-## 💳 Payment Integration
-
-- Supports multiple payment methods:
-  - **Cash Payment**
-  - **Stripe Integration**
-  - **Razorpay Integration**
-- Ensures a secure and smooth payment experience for users.
-
-## 🌐 Project Setup
-
-To set up and run this project locally:
+### Installation
 
 1. **Clone the Repository**:
    ```bash
-   git clone https://github.com/your-username/prescripto.git
-   cd prescripto
+   git clone https://github.com/HarisShah1122/prescription_full-stack_doctor_appointment_app.git
+   cd prescription_full-stack_doctor_appointment_app
    ```
 
-2. **Install Dependencies**:
+2. **Install Backend Dependencies**:
    ```bash
-   npm install
-   cd client
+   cd backend
    npm install
    ```
 
-3. **Environment Variables**:
-   - Create a `.env` file in the root directory and add the following:
-     ```env
-     MONGO_URI=your_mongodb_connection_string
-     JWT_SECRET=your_jwt_secret
-     STRIPE_API_KEY=your_stripe_api_key
-     RAZORPAY_API_KEY=your_razorpay_api_key
-     ```
-
-4. **Run the Application**:
+3. **Install Frontend Dependencies**:
    ```bash
+   cd ../frontend
+   npm install
+   ```
+
+4. **Environment Variables Setup**:
+   
+   Create a `.env` file in the `backend` directory:
+   ```env
+   PORT=4000
+   NODE_ENV=development
+   
+   # MongoDB Local
+   MONGO_URI=mongodb://127.0.0.1:27017/prescription_full-stack_doctor
+   
+   # Cloudinary
+   CLOUDINARY_CLOUD_NAME=your_cloud_name
+   CLOUDINARY_API_KEY=your_api_key
+   CLOUDINARY_API_SECRET=your_api_secret
+   
+   # JWT & Stripe
+   JWT_SECRET=your_jwt_secret_key
+   STRIPE_SECRET_KEY=your_stripe_secret_key
+   CURRENCY=PKR
+   ```
+
+   Create a `.env` file in the `frontend` directory:
+   ```env
+   VITE_BACKEND_URL=http://localhost:4000
+   ```
+
+5. **Start the Application**:
+   
+   Start Backend Server:
+   ```bash
+   cd backend
+   npm start
+   ```
+   
+   Start Frontend Server:
+   ```bash
+   cd frontend
    npm run dev
    ```
 
-## 📦 Folder Structure
+## 📱 Responsive Design
+- **Mobile-First**: Optimized for all devices and screen sizes
+- **Cross-Browser**: Compatible with modern browsers
+- **Accessible**: WCAG compliant UI components
+- **Progressive Web App**: PWA capabilities for mobile experience
+
+## 🔒 Security Features
+- **JWT Authentication**: Secure user sessions and API access
+- **Password Hashing**: bcrypt encryption for user passwords
+- **Input Validation**: Server-side data validation and sanitization
+- **CORS Protection**: Cross-origin request security
+- **Environment Variables**: Secure configuration management
+- **Rate Limiting**: API request throttling for protection
+
+## 🌟 Project Highlights
+- **AI-Powered**: Intelligent medical assistant for user guidance
+- **Real-Time Updates**: Live appointment availability and booking
+- **Modern UI/UX**: Clean, intuitive interface with smooth animations
+- **Scalable Architecture**: Modular code structure for easy maintenance
+- **Production Ready**: Optimized for deployment and scaling
+- **Multi-Platform**: Works seamlessly on desktop, tablet, and mobile
+
+## 📊 API Endpoints
+
+### Authentication
+- `POST /api/user/register` - User registration
+- `POST /api/user/login` - User login
+- `GET /api/user/get-profile` - Get user profile
+- `POST /api/user/update-profile` - Update user profile
+
+### Doctors & Appointments
+- `GET /api/doctor/list` - Get all doctors
+- `GET /api/doctor/:speciality` - Get doctors by specialty
+- `POST /api/user/book-appointment` - Book appointment
+- `GET /api/user/appointments` - Get user appointments
+- `POST /api/user/cancel-appointment` - Cancel appointment
+
+### AI Assistant
+- `POST /api/user/ai-chat` - AI chatbot interaction
+- `GET /api/user/available-doctors` - Get available doctors
+
+### Payments
+- `POST /api/user/payment-stripe` - Process Stripe payment
+- `POST /api/user/verify-stripe` - Verify Stripe payment
+- `POST /api/user/payment-easypaisa` - Process EasyPaisa payment
+- `POST /api/user/payment-jazzcash` - Process JazzCash payment
+
+## 📦 Project Structure
 
 ```plaintext
-prescripto/
-├── client/          # Frontend (React.js)
-├── server/          # Backend (Node.js, Express.js)
-├── models/          # MongoDB Schemas
-├── controllers/     # API Controllers
-├── routes/          # API Routes
-├── middleware/      # Authentication and Error Handling
-├── config/          # Configuration Files
-├── utils/           # Utility Functions
-├── public/          # Static Files
-└── .env             # Environment Variables
+prescription_full-stack_doctor_appointment_app/
+├── backend/                 # Backend Application
+│   ├── config/             # Database and service configurations
+│   ├── controllers/        # API controllers and business logic
+│   ├── middleware/         # Authentication and validation middleware
+│   ├── models/            # MongoDB data models and schemas
+│   ├── routes/            # API route definitions
+│   ├── .env               # Backend environment variables
+│   └── server.js          # Main server entry point
+├── frontend/               # Frontend Application
+│   ├── src/
+│   │   ├── components/     # Reusable React components
+│   │   ├── context/       # React context providers
+│   │   ├── pages/         # Page-level components
+│   │   ├── assets/        # Static assets and images
+│   │   └── App.jsx        # Main application component
+│   ├── public/            # Public static files
+│   └── .env               # Frontend environment variables
+└── README.md              # Project documentation
 ```
 
 ## 🤝 Contributing
 
-We welcome contributions! Please feel free to submit issues, fork the repository, and open pull requests.
+We welcome contributions! Please follow these steps:
 
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## 🌟 Acknowledgements
 
-- Thanks to the developers and contributors of MongoDB, Express.js, React.js, Node.js, Stripe, and Razorpay for their fantastic tools and libraries.
+- Thanks to the open-source community for the amazing tools and libraries
+- Special thanks to MongoDB, Express.js, React.js, Node.js, Stripe, and Cloudinary
+- Built with ❤️ for better healthcare accessibility
 
 ---
+
+**Note**: This application is for demonstration purposes. For production use, ensure all security measures are properly implemented and compliance requirements are met.
 
