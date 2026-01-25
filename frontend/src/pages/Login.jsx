@@ -2,7 +2,7 @@ import React, { useContext, useEffect, useState } from "react";
 import { AppContext } from "../context/AppContext";
 import axios from "axios";
 import { toast } from "react-toastify";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 const Login = () => {
   const [state, setState] = useState("Sign Up");
@@ -10,7 +10,11 @@ const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
+  const location = useLocation();
   const { backendUrl, token, setToken } = useContext(AppContext);
+
+  // Check if this is admin login based on URL
+  const isAdminLogin = location.pathname === "/admin-login";
 
   const onSubmitHandler = async (e) => {
     e.preventDefault();
@@ -26,20 +30,34 @@ const Login = () => {
           localStorage.setItem("token", data.token);
           setToken(data.token);
           toast.success("Account created successfully!");
-          navigate("/");
+          navigate(isAdminLogin ? "/admin-dashboard" : "/");
         } else toast.error(data.message);
       } else {
-        const { data } = await axios.post(`${backendUrl}/api/user/login`, {
-          email,
-          password,
-        });
+        // Check if this is admin login
+        if (isAdminLogin) {
+          const { data } = await axios.post(`${backendUrl}/api/admin/login`, {
+            email,
+            password,
+          });
 
-        if (data.success) {
-          localStorage.setItem("token", data.token);
-          setToken(data.token);
-          toast.success("Login successful!");
-          navigate("/");
-        } else toast.error(data.message);
+          if (data.success) {
+            localStorage.setItem("aToken", data.token);
+            toast.success("Admin login successful!");
+            navigate("/admin-dashboard");
+          } else toast.error(data.message);
+        } else {
+          const { data } = await axios.post(`${backendUrl}/api/user/login`, {
+            email,
+            password,
+          });
+
+          if (data.success) {
+            localStorage.setItem("token", data.token);
+            setToken(data.token);
+            toast.success("Login successful!");
+            navigate("/");
+          } else toast.error(data.message);
+        }
       }
     } catch (err) {
       console.error(err);
@@ -48,16 +66,17 @@ const Login = () => {
   };
 
   useEffect(() => {
-    if (token) navigate("/");
-  }, [token]);
+    if (token && !isAdminLogin) navigate("/");
+    if (localStorage.getItem("aToken") && isAdminLogin) navigate("/admin-dashboard");
+  }, [token, isAdminLogin]);
 
   return (
     <form onSubmit={onSubmitHandler} className="min-h-[80vh] flex items-center">
       <div className="flex flex-col gap-3 m-auto items-start p-8 min-w-[340px] sm:min-w-96 border rounded-xl text-[#5E5E5E] text-sm shadow-lg">
         <p className="text-2xl font-semibold">
-          {state === "Sign Up" ? "Create Account" : "Login"}
+          {isAdminLogin ? "Admin Login" : state === "Sign Up" ? "Create Account" : "Login"}
         </p>
-        <p>Please {state === "Sign Up" ? "sign up" : "log in"} to book appointment</p>
+        <p>Please {isAdminLogin ? "log in as admin" : state === "Sign Up" ? "sign up" : "log in"} to {isAdminLogin ? "manage the hospital" : "book appointment"}</p>
 
         {state === "Sign Up" && (
           <div className="w-full">

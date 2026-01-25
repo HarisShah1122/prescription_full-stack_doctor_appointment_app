@@ -19,15 +19,17 @@ import Appointment from './pages/Appointment'
 import MyAppointments from './pages/MyAppointments'
 import MyProfile from './pages/MyProfile'
 import Verify from './pages/Verify'
+import TestConnection from './pages/TestConnection'
+import AdminLoginTest from './components/AdminLoginTest'
 
 // admin pages
-import AdminDashboard from './admin/src/pages/Admin/Dashboard.jsx'
+import AdminDashboard from './components/AdminDashboard'
 import AllAppointments from './admin/src/pages/Admin/AllAppointments.jsx'
 import AddDoctor from './admin/src/pages/Admin/AddDoctor.jsx'
 import DoctorList from './admin/src/pages/Admin/DoctorsList.jsx'
 
 // doctor pages
-import DoctorDashboard from './admin/src/pages/Doctor/DoctorDashboard.jsx'  
+import DoctorDashboard from './components/DoctorDashboard'  
 import DoctorAppointments from './admin/src/pages/Doctor/DoctorAppointments.jsx'
 import DoctorProfile from './admin/src/pages/Doctor/DoctorProfile.jsx'  
 
@@ -39,10 +41,13 @@ const App = () => {
 
       <Routes>
         {/* ✅ user routes */}
+        <Route path="/admin-login-test" element={<AdminLoginTest />} />
+        <Route path="/test-connection" element={<TestConnection />} />
         <Route path="/" element={<Home />} />
         <Route path="/doctors" element={<Doctors />} />
         <Route path="/doctors/:speciality" element={<Doctors />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/admin-login" element={<Login />} />
         <Route path="/about" element={<About />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/appointment/:docId" element={<Appointment />} />
@@ -51,13 +56,13 @@ const App = () => {
         <Route path="/verify" element={<Verify />} />
 
         {/* ✅ admin routes */}
-        <Route path="/admin-dashboard" element={<><Sidebar /><AdminDashboard /></>} />
+        <Route path="/admin-dashboard" element={<AdminDashboard />} />
         <Route path="/all-appointments" element={<><Sidebar /><AllAppointments /></>} />
         <Route path="/add-doctor" element={<><Sidebar /><AddDoctor /></>} />
         <Route path="/doctor-list" element={<><Sidebar /><DoctorList /></>} />
 
         {/* ✅ doctor routes */}
-        <Route path="/doctor-dashboard" element={<><Sidebar /><DoctorDashboard /></>} />
+        <Route path="/doctor-dashboard" element={<DoctorDashboard />} />
         <Route path="/doctor-appointments" element={<><Sidebar /><DoctorAppointments /></>} />
         <Route path="/doctor-profile" element={<><Sidebar /><DoctorProfile /></>} />
       </Routes>

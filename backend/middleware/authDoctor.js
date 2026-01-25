@@ -8,7 +8,8 @@ const authDoctor = async (req, res, next) => {
     }
     try {
         const token_decode = jwt.verify(dtoken, process.env.JWT_SECRET)
-        req.body.docId = token_decode.id
+        req.userId = token_decode.id  // Set req.userId for consistency
+        req.body.docId = token_decode.id  // Keep for backward compatibility
         next()
     } catch (error) {
         console.log(error)

@@ -155,7 +155,7 @@ const loginUser = async (req, res) => {
 // Get user profile
 const getProfile = async (req, res) => {
     try {
-        const { userId } = req.body;
+        const userId = req.userId; // Get from auth middleware
         const userData = await userModel.findById(userId).select("-password");
         res.json({ success: true, userData });
     } catch (error) {
@@ -191,9 +191,36 @@ const updateProfile = async (req, res) => {
 const bookAppointment = async (req, res) => {
     try {
         const { userId, docId, slotDate, slotTime } = req.body;
-        const docData = await doctorModel.findById(docId).select("-password");
+        
+        // Handle both ObjectId and string IDs from frontend assets
+        let docData;
+        if (docId.startsWith('doc')) {
+            // Map frontend asset IDs to doctor names
+            const doctorNameMap = {
+                'doc1': 'Dr. Ahmed Khan',
+                'doc2': 'Dr. Fatima Zahra', 
+                'doc3': 'Dr. Ayesha Siddiqui',
+                'doc4': 'Dr. Muhammad Ali',
+                'doc5': 'Dr. Sara Hassan',
+                'doc6': 'Dr. Omar Farooq',
+                'doc7': 'Dr. Hira Tariq',
+                'doc8': 'Dr. Ali Raza',
+                'doc9': 'Dr. Mariam Yousuf',
+                'doc10': 'Dr. Hamza Malik',
+                'doc11': 'Dr. Bilal Ahmed',
+                'doc12': 'Dr. Sana Khan'
+            };
+            
+            const doctorName = doctorNameMap[docId];
+            if (doctorName) {
+                docData = await doctorModel.findOne({ name: doctorName }).select("-password");
+            }
+        } else {
+            // Handle ObjectId format
+            docData = await doctorModel.findById(docId).select("-password");
+        }
 
-        if (!docData.available) return res.json({ success: false, message: "Doctor Not Available" });
+        if (!docData) return res.json({ success: false, message: "Doctor Not Found" });
 
         const slots = docData.slots_booked || {};
         if (!slots[slotDate]) slots[slotDate] = [];
@@ -204,7 +231,9 @@ const bookAppointment = async (req, res) => {
         const appointmentData = { userId, docId, userData, docData, amount: docData.fees, slotTime, slotDate, date: Date.now() };
         await new appointmentModel(appointmentData).save();
 
-        await doctorModel.findByIdAndUpdate(docId, { slots_booked: slots });
+        // Update doctor slots using proper ID
+        const updateId = docId.startsWith('doc') ? docData._id : docId;
+        await doctorModel.findByIdAndUpdate(updateId, { slots_booked: slots });
         res.json({ success: true, message: "Appointment Booked" });
     } catch (error) {
         console.error(error);
@@ -221,10 +250,43 @@ const cancelAppointment = async (req, res) => {
         if (appointment.userId !== userId) return res.json({ success: false, message: "Unauthorized" });
 
         await appointmentModel.findByIdAndUpdate(appointmentId, { cancelled: true });
-        const docData = await doctorModel.findById(appointment.docId);
+        
+        // Handle both ObjectId and string IDs for doctor lookup
+        let docData;
+        if (appointment.docId.startsWith('doc')) {
+            // Map frontend asset IDs to doctor names
+            const doctorNameMap = {
+                'doc1': 'Dr. Ahmed Khan',
+                'doc2': 'Dr. Fatima Zahra', 
+                'doc3': 'Dr. Ayesha Siddiqui',
+                'doc4': 'Dr. Muhammad Ali',
+                'doc5': 'Dr. Sara Hassan',
+                'doc6': 'Dr. Omar Farooq',
+                'doc7': 'Dr. Hira Tariq',
+                'doc8': 'Dr. Ali Raza',
+                'doc9': 'Dr. Mariam Yousuf',
+                'doc10': 'Dr. Hamza Malik',
+                'doc11': 'Dr. Bilal Ahmed',
+                'doc12': 'Dr. Sana Khan'
+            };
+            
+            const doctorName = doctorNameMap[appointment.docId];
+            if (doctorName) {
+                docData = await doctorModel.findOne({ name: doctorName });
+            }
+        } else {
+            // Handle ObjectId format
+            docData = await doctorModel.findById(appointment.docId);
+        }
+        
+        if (!docData) return res.json({ success: false, message: "Doctor Not Found" });
+        
         const slots = docData.slots_booked || {};
         slots[appointment.slotDate] = (slots[appointment.slotDate] || []).filter(e => e !== appointment.slotTime);
-        await doctorModel.findByIdAndUpdate(appointment.docId, { slots_booked: slots });
+        
+        // Update doctor slots using proper ID
+        const updateId = appointment.docId.startsWith('doc') ? docData._id : appointment.docId;
+        await doctorModel.findByIdAndUpdate(updateId, { slots_booked: slots });
 
         res.json({ success: true, message: "Appointment Cancelled" });
     } catch (error) {

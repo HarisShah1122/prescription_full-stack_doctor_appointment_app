@@ -23,8 +23,8 @@ const getAIResponse = async (req, res) => {
         // Smart responses with automatic language detection
         if (lowerMessage.includes('hello') || lowerMessage.includes('hi') || lowerMessage.includes('assalam') || lowerMessage.includes('salam')) {
             response = isUrdu ? 
-                "السلام علیکم! پریسکریپشن میڈیکل سنٹر میں خوش آمدید۔ میں آپ کی میڈیکل اپائنٹمنٹس اور صحت کے سوالات میں مدد کرنے کے لیے ہوں۔ آج میں آپ کی کیسے مدد کر سکتا ہوں؟" :
-                "Hello! Welcome to Prescription Medical Center. I'm here to help you with medical appointments and health questions. How can I assist you today?";
+                "السلام علیکم! ایم ایم سی مارڈن میڈیکل کمپلکس میں خوش آمدید۔ میں آپ کی میڈیکل اپائنٹمنٹس اور صحت کے سوالات میں مدد کرنے کے لیے ہوں۔ آج میں آپ کی کیسے مدد کر سکتا ہوں؟" :
+                "Hello! Welcome to MMC Mardan Medical Complex. I'm here to help you with medical appointments and health questions. How can I assist you today?";
         }
         
         else if (lowerMessage.includes('how are you') || lowerMessage.includes('kese ho') || lowerMessage.includes('kia haal hai')) {

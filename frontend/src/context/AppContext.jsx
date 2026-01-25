@@ -12,6 +12,7 @@ const AppContextProvider = (props) => {
   const [doctors, setDoctors] = useState([]);
   const [token, setToken] = useState(localStorage.getItem('token') || '');
   const [userData, setUserData] = useState(null);
+  const [aToken, setAToken] = useState(localStorage.getItem('aToken') || '');
 
   // Fetch doctors from backend
   const getDoctorsData = async () => {
@@ -35,7 +36,7 @@ const AppContextProvider = (props) => {
     if (!token) return;
     try {
       const { data } = await axios.get(`${backendUrl}/api/user/get-profile`, {
-        headers: { token },
+        headers: { Authorization: `Bearer ${token}` },
       });
       if (data.success) {
         setUserData(data.userData);
@@ -65,6 +66,8 @@ const AppContextProvider = (props) => {
     setToken,
     userData,
     setUserData,
+    aToken,
+    setAToken,
     loadUserProfileData,
   };
 

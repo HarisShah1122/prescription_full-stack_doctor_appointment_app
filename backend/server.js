@@ -6,6 +6,7 @@ import connectCloudinary from "./config/cloudinary.js";
 import userRouter from "./routes/userRoute.js";
 import doctorRouter from "./routes/doctorRoute.js";
 import adminRouter from "./routes/adminRoute.js";
+import doctorDashboardRouter from "./routes/doctorDashboardRoute.js";
 
 // Initialize App
 const app = express();
@@ -27,6 +28,7 @@ app.use(
 // Routes
 app.use("/api/user", userRouter);
 app.use("/api/doctor", doctorRouter);
+app.use("/api/doctor", doctorDashboardRouter); // Dashboard routes under doctor
 app.use("/api/admin", adminRouter);
 
 // Root
