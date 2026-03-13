@@ -105,9 +105,9 @@ export const doctors = [
         name: 'Dr. Fatima Zahra',
         image: doc2,
         speciality: 'Gynecologist',
-        degree: 'MBBS, FCPS (Gynae)',
-        experience: '3 Years',
-        about: 'Dr. Fatima Zahra is a compassionate gynecologist specializing in women\'s health, prenatal care, and reproductive medicine. She is committed to providing personalized care to women at all stages of life.',
+        degree: 'MBBS, FCPS (Gynecology)',
+        experience: '7 Years',
+        about: 'Dr. Fatima Zahra is an experienced gynecologist specializing in women\'s health, maternal care, and reproductive medicine. She provides comprehensive gynecological services with compassion and expertise.',
         fees: 2000,
         address: {
             line1: 'Islamabad Medical Complex',
@@ -119,9 +119,9 @@ export const doctors = [
         name: 'Dr. Ayesha Siddiqui',
         image: doc3,
         speciality: 'Dermatologist',
-        degree: 'MBBS, MCPS (Dermatology)',
-        experience: '1 Years',
-        about: 'Dr. Ayesha Siddiqui is a skilled dermatologist specializing in medical and cosmetic dermatology. She provides expert treatment for skin conditions and offers advanced aesthetic procedures.',
+        degree: 'MBBS, FCPS (Dermatology)',
+        experience: '5 Years',
+        about: 'Dr. Ayesha Siddiqui is a skilled dermatologist specializing in medical and cosmetic dermatology. She offers advanced treatments for skin conditions and aesthetic procedures.',
         fees: 1200,
         address: {
             line1: 'Skin Care Clinic',
@@ -132,10 +132,10 @@ export const doctors = [
         _id: 'doc4',
         name: 'Dr. Muhammad Ali',
         image: doc4,
-        speciality: 'Pediatricians',
-        degree: 'MBBS, DCH',
-        experience: '2 Years',
-        about: 'Dr. Muhammad Ali is a caring pediatrician dedicated to children\'s health and well-being. He specializes in pediatric care, vaccinations, and child development monitoring.',
+        speciality: 'Pediatrician',
+        degree: 'MBBS, FCPS (Pediatrics)',
+        experience: '6 Years',
+        about: 'Dr. Muhammad Ali is a compassionate pediatrician dedicated to children\'s health and well-being. He specializes in pediatric care, vaccinations, and child development.',
         fees: 1000,
         address: {
             line1: 'Children\'s Hospital',
@@ -148,8 +148,8 @@ export const doctors = [
         image: doc5,
         speciality: 'Neurologist',
         degree: 'MBBS, FCPS (Neurology)',
-        experience: '4 Years',
-        about: 'Dr. Sara Hassan is an experienced neurologist specializing in the diagnosis and treatment of neurological disorders. She has expertise in stroke management, epilepsy, and neurodegenerative diseases.',
+        experience: '8 Years',
+        about: 'Dr. Sara Hassan is a renowned neurologist with expertise in treating neurological disorders. She specializes in brain and nervous system conditions with advanced diagnostic skills.',
         fees: 2500,
         address: {
             line1: 'Neuro Care Center',
@@ -158,26 +158,12 @@ export const doctors = [
     },
     {
         _id: 'doc6',
-        name: 'Dr. Bilal Ahmed',
-        image: doc6,
-        speciality: 'Neurologist',
-        degree: 'MBBS, MRCP (Neurology)',
-        experience: '4 Years',
-        about: 'Dr. Bilal Ahmed is a renowned neurologist with expertise in treating complex neurological conditions. He specializes in movement disorders, headaches, and neurocritical care.',
-        fees: 2500,
-        address: {
-            line1: 'Aga Khan Hospital',
-            line2: 'Karachi, Sindh'
-        }
-    },
-    {
-        _id: 'doc7',
         name: 'Dr. Omar Farooq',
-        image: doc7,
+        image: doc6,
         speciality: 'General Physician',
         degree: 'MBBS, MCPS',
-        experience: '4 Years',
-        about: 'Dr. Omar Farooq is a dedicated general physician with expertise in internal medicine. He provides comprehensive healthcare services with a focus on preventive care and health education.',
+        experience: '10 Years',
+        about: 'Dr. Omar Farooq is an experienced general physician with expertise in internal medicine and chronic disease management.',
         fees: 1500,
         address: {
             line1: 'Medical Center',
@@ -185,17 +171,31 @@ export const doctors = [
         }
     },
     {
+        _id: 'doc7',
+        name: 'Dr. Hira Tariq',
+        image: doc7,
+        speciality: 'General Physician',
+        degree: 'MBBS, FCPS',
+        experience: '3 Years',
+        about: 'Dr. Hira Tariq is a dedicated general physician focused on preventive care and family medicine.',
+        fees: 1500,
+        address: {
+            line1: 'Family Health Clinic',
+            line2: 'Faisalabad'
+        }
+    },
+    {
         _id: 'doc8',
-        name: 'Dr. Khadija Rehman',
+        name: 'Dr. Ali Raza',
         image: doc8,
         speciality: 'Gynecologist',
-        degree: 'MBBS, MRCOG',
-        experience: '3 Years',
-        about: 'Dr. Khadija Rehman is a skilled gynecologist specializing in high-risk pregnancies, infertility treatments, and minimally invasive gynecological surgeries.',
+        degree: 'MBBS, FCPS (Gynecology)',
+        experience: '9 Years',
+        about: 'Dr. Ali Raza is a skilled gynecologist specializing in high-risk pregnancies and advanced gynecological surgeries.',
         fees: 2000,
         address: {
-            line1: 'Women\'s Health Center',
-            line2: 'Defense Housing Authority, Lahore'
+            line1: 'Maternity & Child Care Hospital',
+            line2: 'Rawalpindi'
         }
     },
     {
@@ -216,10 +216,10 @@ export const doctors = [
         _id: 'doc10',
         name: 'Dr. Hamza Malik',
         image: doc10,
-        speciality: 'Pediatricians',
-        degree: 'MBBS, DCH, FCPS',
-        experience: '2 Years',
-        about: 'Dr. Hamza Malik is a dedicated pediatrician with expertise in pediatric emergency care and child nutrition. He is passionate about promoting children\'s health and development.',
+        speciality: 'Pediatrician',
+        degree: 'MBBS, FCPS (Pediatrics)',
+        experience: '5 Years',
+        about: 'Dr. Hamza Malik is a dedicated pediatrician with expertise in neonatal care and pediatric emergencies.',
         fees: 1000,
         address: {
             line1: 'Kids Care Hospital',
@@ -228,72 +228,30 @@ export const doctors = [
     },
     {
         _id: 'doc11',
-        name: 'Dr. Zainab Abbas',
+        name: 'Dr. Bilal Ahmed',
         image: doc11,
         speciality: 'Neurologist',
         degree: 'MBBS, FCPS (Neurology)',
-        experience: '4 Years',
-        about: 'Dr. Zainab Abbas is an expert neurologist specializing in neurophysiology, epilepsy management, and sleep disorders. She is committed to providing comprehensive neurological care.',
+        experience: '12 Years',
+        about: 'Dr. Bilal Ahmed is a senior neurologist with extensive experience in treating complex neurological disorders and stroke management.',
         fees: 2500,
         address: {
-            line1: 'Neurology Institute',
-            line2: 'PECHS, Karachi'
+            line1: 'Aga Khan Hospital',
+            line2: 'Karachi'
         }
     },
     {
         _id: 'doc12',
-        name: 'Dr. Usman Ghani',
-        image: doc12,
-        speciality: 'Neurologist',
-        degree: 'MBBS, FRCP (Neurology)',
-        experience: '4 Years',
-        about: 'Dr. Usman Ghani is a highly experienced neurologist with expertise in stroke care, multiple sclerosis, and neuroimmunology. He is known for his patient-centered approach.',
-        fees: 2500,
-        address: {
-            line1: 'Shifa International Hospital',
-            line2: 'Islamabad'
-        }
-    },
-    {
-        _id: 'doc13',
-        name: 'Dr. Hira Tariq',
-        image: doc13,
-        speciality: 'General Physician',
-        degree: 'MBBS, ACP',
-        experience: '4 Years',
-        about: 'Dr. Hira Tariq is a compassionate general physician with expertise in family medicine, chronic disease management, and preventive healthcare.',
-        fees: 1500,
-        address: {
-            line1: 'Family Health Clinic',
-            line2: 'Faisalabad, Punjab'
-        }
-    },
-    {
-        _id: 'doc14',
-        name: 'Dr. Ali Raza',
-        image: doc14,
-        speciality: 'Gynecologist',
-        degree: 'MBBS, FCPS (Gynae & Obs)',
-        experience: '3 Years',
-        about: 'Dr. Ali Raza is a skilled gynecologist specializing in reproductive medicine, laparoscopic surgeries, and high-risk obstetrics.',
-        fees: 2000,
-        address: {
-            line1: 'Maternity & Child Care Hospital',
-            line2: 'Rawalpindi, Punjab'
-        }
-    },
-    {
-        _id: 'doc15',
         name: 'Dr. Sana Khan',
-        image: doc15,
+        image: doc12,
         speciality: 'Dermatologist',
-        degree: 'MBBS, DDVL',
-        experience: '1 Years',
-        about: 'Dr. Sana Khan is a dedicated dermatologist specializing in medical dermatology, aesthetic procedures, and skin rejuvenation treatments.',
+        degree: 'MBBS, FCPS (Dermatology)',
+        experience: '4 Years',
+        about: 'Dr. Sana Khan is a skilled dermatologist specializing in medical dermatology and aesthetic treatments.',
         fees: 1200,
         address: {
             line1: 'Derma Care Clinic',
             line2: 'Johar Town, Lahore'
         }
-    },
+    }
 ]

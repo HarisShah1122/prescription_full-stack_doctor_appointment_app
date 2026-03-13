@@ -138,7 +138,7 @@ const registerUser = async (req, res) => {
 const loginUser = async (req, res) => {
     try {
         const { email, password } = req.body;
-        const user = await userModel.findOne({ email });
+        const user = await userModel.findOne({ email }).select('+password');
         if (!user) return res.json({ success: false, message: "User does not exist" });
 
         const isMatch = await bcrypt.compare(password, user.password);
@@ -190,7 +190,8 @@ const updateProfile = async (req, res) => {
 // Book appointment
 const bookAppointment = async (req, res) => {
     try {
-        const { userId, docId, slotDate, slotTime } = req.body;
+        const { docId, slotDate, slotTime } = req.body;
+        const userId = req.userId; // Get from auth middleware
         
         // Handle both ObjectId and string IDs from frontend assets
         let docData;
@@ -228,7 +229,18 @@ const bookAppointment = async (req, res) => {
         slots[slotDate].push(slotTime);
 
         const userData = await userModel.findById(userId).select("-password");
-        const appointmentData = { userId, docId, userData, docData, amount: docData.fees, slotTime, slotDate, date: Date.now() };
+        if (!userData) return res.json({ success: false, message: "User not found" });
+        
+        const appointmentData = { 
+            userId, 
+            docId, 
+            userData: userData.toObject(), 
+            docData: docData.toObject(), 
+            amount: docData.fees, 
+            slotTime, 
+            slotDate, 
+            date: Date.now() 
+        };
         await new appointmentModel(appointmentData).save();
 
         // Update doctor slots using proper ID
@@ -244,7 +256,8 @@ const bookAppointment = async (req, res) => {
 // Cancel appointment
 const cancelAppointment = async (req, res) => {
     try {
-        const { userId, appointmentId } = req.body;
+        const { appointmentId } = req.body;
+        const userId = req.userId; // Get from auth middleware
         const appointment = await appointmentModel.findById(appointmentId);
 
         if (appointment.userId !== userId) return res.json({ success: false, message: "Unauthorized" });
@@ -298,7 +311,7 @@ const cancelAppointment = async (req, res) => {
 // List appointments
 const listAppointment = async (req, res) => {
     try {
-        const { userId } = req.body;
+        const userId = req.userId; // Get from auth middleware
         const appointments = await appointmentModel.find({ userId });
         res.json({ success: true, appointments });
     } catch (error) {

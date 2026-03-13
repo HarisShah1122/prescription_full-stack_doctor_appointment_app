@@ -20,8 +20,39 @@ const Appointment = () => {
 
   // 🩺 Fetch selected doctor info
   const fetchDocInfo = async () => {
-    const info = doctors.find((doc) => doc._id === docId);
-    if (info) setDocInfo(info);
+    // First try to find by exact ID match
+    let info = doctors.find((doc) => doc._id === docId);
+    
+    // If not found, try to find by name mapping for string IDs
+    if (!info && docId.startsWith('doc')) {
+      const doctorNameMap = {
+        'doc1': 'Dr. Ahmed Khan',
+        'doc2': 'Dr. Fatima Zahra', 
+        'doc3': 'Dr. Ayesha Siddiqui',
+        'doc4': 'Dr. Muhammad Ali',
+        'doc5': 'Dr. Sara Hassan',
+        'doc6': 'Dr. Hamza Malik',
+        'doc7': 'Dr. Hira Tariq',
+        'doc8': 'Dr. Bilal Ahmed',
+        'doc9': 'Dr. Ali Raza',
+        'doc10': 'Dr. Nida Khan',
+        'doc11': 'Dr. Usman Tariq',
+        'doc12': 'Dr. Sana Malik'
+      };
+      
+      const doctorName = doctorNameMap[docId];
+      if (doctorName) {
+        info = doctors.find((doc) => doc.name === doctorName);
+      }
+    }
+    
+    if (info) {
+      setDocInfo(info);
+    } else {
+      console.error('Doctor not found:', docId);
+      toast.error('Doctor not found');
+      navigate('/doctors');
+    }
   };
 
   // 🕒 Generate available slots

@@ -211,7 +211,7 @@ const doctorsData = [
 
 async function seedDoctors() {
     try {
-        await mongoose.connect('mongodb://127.0.0.1:27017/prescription_full-stack_doctor');
+        await mongoose.connect('mongodb://127.0.0.1:27017/prescription_fullstack_doctor');
         console.log('Connected to MongoDB');
 
         // Clear existing doctors
