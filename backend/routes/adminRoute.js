@@ -15,10 +15,11 @@ import {
 import { changeAvailablity } from '../controllers/doctorController.js';
 import authAdmin from '../middleware/authAdmin.js';
 import upload from '../middleware/multer.js';
+import { loginLimiter } from '../middleware/rateLimiter.js';
 const adminRouter = express.Router();
 
 // Authentication
-adminRouter.post("/login", loginAdmin)
+adminRouter.post("/login", loginLimiter, loginAdmin)
 
 // Doctor management
 adminRouter.post("/add-doctor", authAdmin, upload.single('image'), addDoctor)

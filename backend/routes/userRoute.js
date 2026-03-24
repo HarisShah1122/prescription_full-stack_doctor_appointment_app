@@ -1,6 +1,7 @@
 import express from 'express';
 import upload from '../middleware/multer.js';
 import authUser from '../middleware/authUser.js';
+import { loginLimiter } from '../middleware/rateLimiter.js';
 import {
   loginUser,
   registerUser,
@@ -20,7 +21,7 @@ const userRouter = express.Router();
 
 // Public routes
 userRouter.post("/register", registerUser);
-userRouter.post("/login", loginUser);
+userRouter.post("/login", loginLimiter, loginUser);
 
 // Protected routes
 userRouter.get("/get-profile", authUser, getProfile);

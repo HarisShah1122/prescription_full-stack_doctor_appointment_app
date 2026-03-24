@@ -1,13 +1,13 @@
 import jwt from "jsonwebtoken";
-import bcrypt from "bcrypt";
+import { v2 as cloudinary } from "cloudinary";
 import doctorModel from "../models/doctorModel.js";
 import appointmentModel from "../models/appointmentModel.js";
+import bcrypt from "bcrypt";
+import { generateToken, setAuthCookie } from "../utils/authUtils.js";
 
 // API for doctor Login 
 const loginDoctor = async (req, res) => {
-
     try {
-
         const { email, password } = req.body
         const user = await doctorModel.findOne({ email })
 
@@ -18,12 +18,24 @@ const loginDoctor = async (req, res) => {
         const isMatch = await bcrypt.compare(password, user.password)
 
         if (isMatch) {
-            const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET)
-            res.json({ success: true, token })
+            // Generate JWT token with 1 hour expiry
+            const payload = { id: user._id, email: user.email, role: 'doctor' };
+            const token = generateToken(payload);
+            
+            // Set HTTP-only cookie
+            setAuthCookie(res, token);
+            
+            // Store minimal session data
+            req.session = { user: { id: user._id, email: user.email, role: 'doctor' } };
+            
+            res.json({ 
+                success: true, 
+                message: 'Login successful',
+                user: { id: user._id, email: user.email, role: 'doctor' }
+            })
         } else {
             res.json({ success: false, message: "Invalid credentials" })
         }
-
 
     } catch (error) {
         console.log(error)
