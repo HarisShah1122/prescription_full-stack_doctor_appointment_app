@@ -23,12 +23,24 @@ const authUser = async (req, res, next) => {
 
         const decoded = verifyToken(token);
         
-        // Check if user role is user
-        if (decoded.role !== 'user') {
+        // Check user authentication - support both old and new token formats
+        let isUser = false;
+        
+        // New format: check role
+        if (decoded.role === 'user') {
+            isUser = true;
+            req.userId = decoded.id;
+        }
+        // Old format: check if token has id property (no role)
+        else if (decoded.id && !decoded.role) {
+            isUser = true;
+            req.userId = decoded.id;
+        }
+
+        if (!isUser) {
             return res.status(401).json({ success: false, message: 'Not authorized' });
         }
 
-        req.userId = decoded.id; // attach userId to request object
         next();
     } catch (error) {
         console.error(error);

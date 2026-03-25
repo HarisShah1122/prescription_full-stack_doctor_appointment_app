@@ -127,8 +127,26 @@ const registerUser = async (req, res) => {
         const hashedPassword = await bcrypt.hash(password, await bcrypt.genSalt(10));
         const user = await new userModel({ name, email, password: hashedPassword }).save();
 
-        const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
-        res.json({ success: true, token });
+        // Generate JWT token with 1 hour expiry
+        const payload = { id: user._id, email: user.email, role: 'user' };
+        const token = generateToken(payload);
+        
+        // Set HTTP-only cookie
+        setAuthCookie(res, token);
+        
+        // Store minimal session data
+        req.session = { user: { id: user._id, email: user.email, role: 'user' } };
+        
+        res.json({ 
+            success: true, 
+            token: token, // Include token for backward compatibility
+            user: { 
+                id: user._id, 
+                email: user.email, 
+                name: user.name,
+                role: 'user' 
+            }
+        });
     } catch (error) {
         console.error(error);
         res.json({ success: false, message: error.message });
@@ -158,7 +176,13 @@ const loginUser = async (req, res) => {
         res.json({ 
             success: true, 
             message: 'Login successful',
-            user: { id: user._id, email: user.email, role: 'user' }
+            token: token, // Include token for backward compatibility
+            user: { 
+                id: user._id, 
+                email: user.email, 
+                name: user.name,
+                role: 'user' 
+            }
         });
     } catch (error) {
         console.error(error);

@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useState } from "react";
 import { AppContext } from "../context/AppContext";
-import axios from "axios";
+import api from "../utils/axios";
 import { toast } from "react-toastify";
 import { useNavigate, useLocation } from "react-router-dom";
 
@@ -20,13 +20,15 @@ const Login = () => {
     e.preventDefault();
     try {
       if (state === "Sign Up") {
-        const { data } = await axios.post(`${backendUrl}/api/user/register`, {
+        const { data } = await api.post('/api/user/register', {
           name,
           email,
           password,
         });
 
         if (data.success) {
+          // Cookie will be set automatically by backend
+          // Keep localStorage for backward compatibility
           localStorage.setItem("token", data.token);
           setToken(data.token);
           toast.success("Account created successfully!");
@@ -35,23 +37,27 @@ const Login = () => {
       } else {
         // Check if this is admin login
         if (isAdminLogin) {
-          const { data } = await axios.post(`${backendUrl}/api/admin/login`, {
+          const { data } = await api.post('/api/admin/login', {
             email,
             password,
           });
 
           if (data.success) {
+            // Cookie will be set automatically by backend
+            // Keep localStorage for backward compatibility
             localStorage.setItem("aToken", data.token);
             toast.success("Admin login successful!");
             navigate("/admin-dashboard");
           } else toast.error(data.message);
         } else {
-          const { data } = await axios.post(`${backendUrl}/api/user/login`, {
+          const { data } = await api.post('/api/user/login', {
             email,
             password,
           });
 
           if (data.success) {
+            // Cookie will be set automatically by backend
+            // Keep localStorage for backward compatibility
             localStorage.setItem("token", data.token);
             setToken(data.token);
             toast.success("Login successful!");

@@ -31,7 +31,8 @@ const loginDoctor = async (req, res) => {
             res.json({ 
                 success: true, 
                 message: 'Login successful',
-                user: { id: user._id, email: user.email, role: 'doctor' }
+                token: token, 
+                user: { id: user._id, email: user.email, name: user.name, role: 'doctor' }
             })
         } else {
             res.json({ success: false, message: "Invalid credentials" })

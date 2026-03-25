@@ -30,6 +30,7 @@ const loginAdmin = async (req, res) => {
             res.json({ 
                 success: true, 
                 message: 'Login successful',
+                token: token, // Include token for backward compatibility
                 user: { email, role: 'admin' }
             })
         } else {

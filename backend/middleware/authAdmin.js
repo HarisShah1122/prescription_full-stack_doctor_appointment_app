@@ -19,8 +19,21 @@ const authAdmin = async (req, res, next) => {
         // Verify token using utility function
         const token_decode = verifyToken(token)
         
-        // For admin, check if it matches admin credentials (backward compatibility)
-        if (token_decode.email !== process.env.ADMIN_EMAIL || token_decode.role !== 'admin') {
+        // Check authentication - support both old and new token formats
+        let isAdmin = false;
+        
+        // New format: check role
+        if (token_decode.role === 'admin') {
+            isAdmin = true;
+        }
+        // Old format: check if token matches admin credentials (string comparison)
+        else if (typeof token_decode === 'string') {
+            if (token_decode === process.env.ADMIN_EMAIL + process.env.ADMIN_PASSWORD) {
+                isAdmin = true;
+            }
+        }
+        
+        if (!isAdmin) {
             return res.json({ success: false, message: 'Not Authorized Login Again' })
         }
         

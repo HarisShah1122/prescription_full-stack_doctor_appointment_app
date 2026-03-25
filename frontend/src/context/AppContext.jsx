@@ -1,6 +1,6 @@
 import { createContext, useEffect, useState } from "react";
 import { toast } from "react-toastify";
-import axios from 'axios';
+import api from '../utils/axios';
 import { doctors as staticDoctors } from "../assets/assets";
 
 export const AppContext = createContext();
@@ -17,7 +17,7 @@ const AppContextProvider = (props) => {
   // Fetch doctors from backend
   const getDoctorsData = async () => {
     try {
-      const { data } = await axios.get(`${backendUrl}/api/doctor/list`);
+      const { data } = await api.get('/api/doctor/list');
       if (data?.success && Array.isArray(data.doctors) && data.doctors.length > 0) {
         setDoctors(data.doctors);
       } else {
@@ -35,9 +35,7 @@ const AppContextProvider = (props) => {
   const loadUserProfileData = async () => {
     if (!token) return;
     try {
-      const { data } = await axios.get(`${backendUrl}/api/user/get-profile`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const { data } = await api.get('/api/user/get-profile');
       if (data.success) {
         setUserData(data.userData);
       } else {

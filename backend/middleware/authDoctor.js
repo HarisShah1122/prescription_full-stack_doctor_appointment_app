@@ -19,13 +19,26 @@ const authDoctor = async (req, res, next) => {
         // Verify token using utility function
         const token_decode = verifyToken(token)
         
-        // Check if user role is doctor
-        if (token_decode.role !== 'doctor') {
+        // Check doctor authentication - support both old and new token formats
+        let isDoctor = false;
+        
+        // New format: check role
+        if (token_decode.role === 'doctor') {
+            isDoctor = true;
+            req.userId = token_decode.id;
+            req.body.docId = token_decode.id;
+        }
+        // Old format: check if token has id property (no role)
+        else if (token_decode.id && !token_decode.role) {
+            isDoctor = true;
+            req.userId = token_decode.id;
+            req.body.docId = token_decode.id;
+        }
+        
+        if (!isDoctor) {
             return res.json({ success: false, message: 'Not Authorized Login Again' })
         }
         
-        req.userId = token_decode.id  // Set req.userId for consistency
-        req.body.docId = token_decode.id  // Keep for backward compatibility
         next()
     } catch (error) {
         console.log(error)
