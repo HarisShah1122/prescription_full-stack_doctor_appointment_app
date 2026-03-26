@@ -6,6 +6,7 @@ import doctorModel from "../models/doctorModel.js";
 import appointmentModel from "../models/appointmentModel.js";
 import { v2 as cloudinary } from "cloudinary";
 import stripe from "stripe";
+import { generateToken, setAuthCookie } from "../utils/authUtils.js";
 
 // Stripe Gateway Initialize
 const stripeInstance = new stripe(process.env.STRIPE_SECRET_KEY);
@@ -126,8 +127,26 @@ const registerUser = async (req, res) => {
         const hashedPassword = await bcrypt.hash(password, await bcrypt.genSalt(10));
         const user = await new userModel({ name, email, password: hashedPassword }).save();
 
-        const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
-        res.json({ success: true, token });
+        // Generate JWT token with 1 hour expiry
+        const payload = { id: user._id, email: user.email, role: 'user' };
+        const token = generateToken(payload);
+        
+        // Set HTTP-only cookie
+        setAuthCookie(res, token);
+        
+        // Store minimal session data
+        req.session = { user: { id: user._id, email: user.email, role: 'user' } };
+        
+        res.json({ 
+            success: true, 
+            token: token, // Include token for backward compatibility
+            user: { 
+                id: user._id, 
+                email: user.email, 
+                name: user.name,
+                role: 'user' 
+            }
+        });
     } catch (error) {
         console.error(error);
         res.json({ success: false, message: error.message });
@@ -144,8 +163,27 @@ const loginUser = async (req, res) => {
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) return res.json({ success: false, message: "Invalid credentials" });
 
-        const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
-        res.json({ success: true, token });
+        // Generate JWT token with 1 hour expiry
+        const payload = { id: user._id, email: user.email, role: 'user' };
+        const token = generateToken(payload);
+        
+        // Set HTTP-only cookie
+        setAuthCookie(res, token);
+        
+        // Store minimal session data
+        req.session = { user: { id: user._id, email: user.email, role: 'user' } };
+        
+        res.json({ 
+            success: true, 
+            message: 'Login successful',
+            token: token, // Include token for backward compatibility
+            user: { 
+                id: user._id, 
+                email: user.email, 
+                name: user.name,
+                role: 'user' 
+            }
+        });
     } catch (error) {
         console.error(error);
         res.json({ success: false, message: error.message });

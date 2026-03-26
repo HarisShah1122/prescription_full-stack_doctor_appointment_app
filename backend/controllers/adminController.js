@@ -5,11 +5,11 @@ import bcrypt from "bcrypt";
 import validator from "validator";
 import { v2 as cloudinary } from "cloudinary";
 import userModel from "../models/userModel.js";
+import { generateToken, setAuthCookie } from "../utils/authUtils.js";
 
 // API for admin login
 const loginAdmin = async (req, res) => {
     try {
-
         const { email, password } = req.body
 
         // Default admin credentials for MMC Mardan Medical Complex
@@ -17,8 +17,22 @@ const loginAdmin = async (req, res) => {
         const defaultPassword = process.env.ADMIN_PASSWORD || 'admin123';
 
         if (email === defaultEmail && password === defaultPassword) {
-            const token = jwt.sign(email + password, process.env.JWT_SECRET)
-            res.json({ success: true, token })
+            // Generate JWT token with 1 hour expiry
+            const payload = { email, role: 'admin' };
+            const token = generateToken(payload);
+            
+            // Set HTTP-only cookie
+            setAuthCookie(res, token);
+            
+            // Store minimal session data
+            req.session = { user: { email, role: 'admin' } };
+            
+            res.json({ 
+                success: true, 
+                message: 'Login successful',
+                token: token, // Include token for backward compatibility
+                user: { email, role: 'admin' }
+            })
         } else {
             res.json({ success: false, message: "Invalid credentials" })
         }
@@ -29,7 +43,6 @@ const loginAdmin = async (req, res) => {
     }
 
 }
-
 
 // API to get all appointments list
 const appointmentsAdmin = async (req, res) => {
