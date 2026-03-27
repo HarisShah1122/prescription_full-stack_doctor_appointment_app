@@ -1,7 +1,43 @@
-// AI Controller for handling chatbot requests
+// AI Controller with Fixed Core Logic
 import doctorModel from '../models/doctorModel.js';
+import ChatbotLogic from '../utils/chatbotLogic.js';
 
-// AI chatbot response handler with automatic language detection
+// Initialize chatbot logic
+const chatbotLogic = new ChatbotLogic();
+
+// Get doctors by specialty with availability check (FIXED)
+const getDoctorsBySpecialty = async (specialty) => {
+    console.log(`🔍 DEBUG: Looking for doctors with specialty: "${specialty}"`);
+    
+    // First, get all available doctors to debug
+    const allAvailableDoctors = await doctorModel.find({ available: true });
+    console.log(`🔍 DEBUG: All available doctors in DB:`, allAvailableDoctors.map(d => ({ name: d.name, speciality: d.speciality })));
+    
+    // Case-insensitive matching with normalization
+    const normalizedTarget = specialty.toLowerCase().trim();
+    console.log(`🔍 DEBUG: Normalized target specialty: "${normalizedTarget}"`);
+    
+    const matchedDoctors = allAvailableDoctors.filter(doctor => {
+        const normalizedDbSpecialty = doctor.speciality.toLowerCase().trim();
+        console.log(`🔍 DEBUG: Comparing "${normalizedDbSpecialty}" with "${normalizedTarget}"`);
+        return normalizedDbSpecialty === normalizedTarget;
+    });
+    
+    console.log(`🏥 Found ${matchedDoctors.length} available ${specialty}s`);
+    console.log(`🔍 DEBUG: Matched doctors:`, matchedDoctors.map(d => d.name));
+    
+    return matchedDoctors;
+};
+
+// Generate session ID from request
+const getSessionId = (req) => {
+    const sessionId = req.headers['x-session-id'] || 
+                   req.cookies?.sessionId || 
+                   req.ip + '-' + Date.now();
+    return sessionId;
+};
+
+// AI chatbot response handler with intelligent medical assistant behavior
 const getAIResponse = async (req, res) => {
     try {
         const { message } = req.body;
@@ -10,102 +46,146 @@ const getAIResponse = async (req, res) => {
             return res.json({ success: false, message: "Message is required" });
         }
 
-        // Get doctors data for contextual responses
-        const doctors = await doctorModel.find({});
-        
-        // Automatic language detection using Unicode characters
-        const isUrdu = /[ا-ے]/.test(message);
-        const isMixed = /[ا-ے]/.test(message) && /[a-zA-Z]/.test(message);
-        
-        let response = "";
-        const lowerMessage = message.toLowerCase();
+        console.log('\n🚀 === INTELLIGENT MEDICAL ASSISTANT ===');
+        console.log(`📩 User input: "${message}"`);
 
-        // Smart responses with automatic language detection
-        if (lowerMessage.includes('hello') || lowerMessage.includes('hi') || lowerMessage.includes('assalam') || lowerMessage.includes('salam')) {
-            response = isUrdu ? 
-                "السلام علیکم! ایم ایم سی مارڈن میڈیکل کمپلکس میں خوش آمدید۔ میں آپ کی میڈیکل اپائنٹمنٹس اور صحت کے سوالات میں مدد کرنے کے لیے ہوں۔ آج میں آپ کی کیسے مدد کر سکتا ہوں؟" :
-                "Hello! Welcome to MMC Mardan Medical Complex. I'm here to help you with medical appointments and health questions. How can I assist you today?";
-        }
+        // Get or create session
+        const sessionId = getSessionId(req);
+        console.log(`🆔 Session ID: ${sessionId}`);
         
-        else if (lowerMessage.includes('how are you') || lowerMessage.includes('kese ho') || lowerMessage.includes('kia haal hai')) {
-            response = isUrdu ? 
-                "میں بہت اچھا ہوں، شکریہ! میں آپ کی میڈیکل سوالات کے جواب دینے کے لیے ہر وقت موجود ہوں۔ آپ مجھ سے کیا پوچھنا چاہیں گے؟" :
-                "I'm doing great, thank you! I'm here 24/7 to help you with any medical or health-related questions. What can I help you with today?";
-        }
+        // Set session ID in chatbot logic for context awareness
+        chatbotLogic.setCurrentSessionId(sessionId);
+
+        // Get all doctors for context and debug specialties
+        const doctors = await doctorModel.find({});
+        console.log(`👥 Total doctors in database: ${doctors.length}`);
         
-        else if (lowerMessage.includes('time') || lowerMessage.includes('waqt') || lowerMessage.includes('tarikh')) {
-            const now = new Date();
-            response = isUrdu ? 
-                `موجودہ وقت ${now.toLocaleTimeString()} ہے۔ کلنک پیر سے جمعہ 9 صبح سے 8 شام تک کھلتا ہے۔` :
-                `The current time is ${now.toLocaleTimeString()}. Our clinic is open Monday-Friday 9 AM-8 PM.`;
-        }
+        // DEBUG: Log all available specialties in database
+        const availableSpecialties = [...new Set(doctors.map(d => d.speciality))];
+        console.log(`🔍 DEBUG: Available specialties in DB:`, availableSpecialties);
+
+        // Automatic language detection
+        const isUrdu = /[ا-ے]/.test(message);
+        console.log(`🌐 Language detected: ${isUrdu ? 'Urdu' : 'English'}`);
+
+        // Initialize response variables
+        let response = "";
+        let recommendedDoctors = [];
+        let detectedSpecialty = null;
+        let detectedIntent = null;
+
+        // STEP 1: DETECT INTENT (First step in processing flow)
+        console.log(`\n📍 STEP 1: Detecting intent...`);
+        detectedIntent = chatbotLogic.detectIntent(message);
+        console.log(`🎯 Detected intent: ${detectedIntent}`);
         
-        else if (lowerMessage.includes('emergency') || lowerMessage.includes('fori') || lowerMessage.includes('jaldi')) {
-            response = isUrdu ? 
-                "🚨 ایمرجنسی کے لیے فوری طور پر 1122 کو کال کریں۔ اگر یہ ایمرجنسی نہیں ہے، تو میں آپ کی اپائنٹمنٹ شیڈول کر سکتا ہوں۔" :
-                "🚨 For emergencies, call 1122 immediately. If not an emergency, I can help schedule an appointment.";
-        }
+        // STEP 2: MAP SYMPTOM TO SPECIALTY (Second step)
+        console.log(`\n📍 STEP 2: Mapping symptom to specialty...`);
+        detectedSpecialty = chatbotLogic.mapSymptomToSpecialty(message);
+        console.log(`🏥 Detected specialty: ${detectedSpecialty}`);
         
-        // Doctor queries with language detection
-        else if (lowerMessage.includes('doctor') || lowerMessage.includes('daktar') || lowerMessage.includes('dr.')) {
+        // STEP 3: FETCH DOCTORS FROM API (Third step)
+        console.log(`\n📍 STEP 3: Fetching doctors from API...`);
+        if (detectedSpecialty) {
+            recommendedDoctors = await getDoctorsBySpecialty(detectedSpecialty);
             
-            if (lowerMessage.includes('ahmed') || lowerMessage.includes('ahmad')) {
-                const doctor = doctors.find(d => d.name.toLowerCase().includes('ahmed'));
-                if (doctor) {
-                    response = isUrdu ? 
-                        `👨‍⚕️ ڈاکٹر ${doctor.name} - ${doctor.speciality}\n📅 دستاب: پیر سے جمعہ 9 صبح - 8 شام\n💰 فی: Rs. ${doctor.fees}\n📍 مقام: ${doctor.address.line1}\n\nکیا آپ اپائنٹمنٹ بکوانا چاہیں گے؟` :
-                        `👨‍⚕️ Dr. ${doctor.name} - ${doctor.speciality}\n📅 Available: Monday-Friday 9 AM-8 PM\n💰 Fee: Rs. ${doctor.fees}\n📍 Location: ${doctor.address.line1}\n\nWould you like to book an appointment?`;
-                }
+            // If no doctors for this specialty, fallback to General Physician
+            if (recommendedDoctors.length === 0) {
+                console.log(`⚠️ No ${detectedSpecialty} available, falling back to General Physician`);
+                recommendedDoctors = await getDoctorsBySpecialty('General Physician');
+                detectedSpecialty = 'General Physician';
             }
+        } else if (detectedIntent === 'doctor_search') {
+            // For direct doctor requests, show all available doctors
+            recommendedDoctors = await doctorModel.find({ available: true });
+            detectedSpecialty = 'All Available Doctors';
+        } else if (detectedIntent === 'unknown') {
+            // Fallback to General Physician for unknown intents
+            console.log(`⚠️ Unknown intent, falling back to General Physician`);
+            recommendedDoctors = await getDoctorsBySpecialty('General Physician');
+            detectedSpecialty = 'General Physician';
+        }
+        console.log(`👨‍⚕️ Doctors fetched: ${recommendedDoctors.length}`);
+
+        // STEP 4: GENERATE INTELLIGENT RESPONSE (Fourth step)
+        console.log(`\n📍 STEP 4: Generating intelligent response...`);
+        
+        // PRIORITY OVERRIDE: Force data-driven response if doctors and specialty exist
+        if (recommendedDoctors.length > 0 && detectedSpecialty) {
+            console.log(`🚀 PRIORITY OVERRIDE: Using real doctor data`);
+            console.log(`🔍 DEBUG - Doctors: ${recommendedDoctors.length}`);
+            console.log(`🔍 DEBUG - Specialty: ${detectedSpecialty}`);
             
-            if (!response) {
-                const specialties = [...new Set(doctors.map(doc => doc.speciality))];
+            // Generate intelligent data-driven response based on intent
+            if (detectedIntent === 'symptoms') {
                 response = isUrdu ? 
-                    `ہمارے پاس مختلف سپیشلٹیز کے ڈاکٹر ہیں:\n${specialties.map(spec => `• ${spec}`).join('\n')}\n\nآپ کس سپیشلٹی کے لیے ڈاکٹر تلاش کرنا چاہیں گے؟` :
-                    `We have doctors across various specialties:\n${specialties.map(spec => `• ${spec}`).join('\n')}\n\nWhich specialty are you looking for?`;
+                    `🩺 آپ کی علامات کی بنیاد پر، آپ کو ${detectedSpecialty} سے مشاورت کرنی چاہیے۔ یہاں دستیاب ڈاکٹر ہیں:\n\n${recommendedDoctors.map((doc, index) => 
+                        `${index + 1}. ڈاکٹر ${doc.name}\n   🏥 ${doc.speciality}\n   🎓 ${doc.degree}\n   💰 Rs. ${doc.fees}\n   📍 ${doc.address?.line1 || 'Medical Center'}\n   ${doc.available ? '✅ دستیاب' : '❌ غیر دستیاب'}`
+                    ).join('\n\n')}\n\nکیا آپ ان میں سے کسی کے ساتھ اپائنٹمنٹ بکوانا چاہیں گے؟` :
+                    `🩺 Based on your symptoms, you should consult a ${detectedSpecialty}. Here are available doctors:\n\n${recommendedDoctors.map((doc, index) => 
+                        `${index + 1}. Dr. ${doc.name}\n   🏥 ${doc.speciality}\n   🎓 ${doc.degree}\n   💰 Rs. ${doc.fees}\n   📍 ${doc.address?.line1 || 'Medical Center'}\n   ${doc.available ? '✅ Available' : '❌ Unavailable'}`
+                    ).join('\n\n')}\n\nWould you like to book an appointment with any of these doctors?`;
+            } else if (detectedIntent === 'doctor_search') {
+                response = isUrdu ? 
+                    `🩺 یہاں دستیاب ڈاکٹر ہیں:\n\n${recommendedDoctors.map((doc, index) => 
+                        `${index + 1}. ڈاکٹر ${doc.name}\n   🏥 ${doc.speciality}\n   🎓 ${doc.degree}\n   💰 Rs. ${doc.fees}\n   📍 ${doc.address?.line1 || 'Medical Center'}\n   ${doc.available ? '✅ دستیاب' : '❌ غیر دستیاب'}`
+                    ).join('\n\n')}\n\nکیا آپ ان میں سے کسی کے ساتھ اپائنٹمنٹ بکوانا چاہیں گے؟` :
+                    `🩺 Here are available doctors:\n\n${recommendedDoctors.map((doc, index) => 
+                        `${index + 1}. Dr. ${doc.name}\n   🏥 ${doc.speciality}\n   🎓 ${doc.degree}\n   💰 Rs. ${doc.fees}\n   📍 ${doc.address?.line1 || 'Medical Center'}\n   ${doc.available ? '✅ Available' : '❌ Unavailable'}`
+                    ).join('\n\n')}\n\nWould you like to book an appointment with any of these doctors?`;
+            } else if (detectedIntent === 'booking') {
+                response = isUrdu ? 
+                    `📅 اچھا! ${detectedSpecialty} کے لیے اپائنٹمنٹ بکوانے کے لیے، براہ کرم بتائیں کہ آپ کس ڈاکٹر کو ترجیح دیں گے؟\n\n${recommendedDoctors.map((doc, index) => 
+                        `${index + 1}. ڈاکٹر ${doc.name} - ${doc.fees} روپے`
+                    ).join('\n')}` :
+                    `📅 Great! To book an appointment with a ${detectedSpecialty}, please let me know which doctor you prefer:\n\n${recommendedDoctors.map((doc, index) => 
+                        `${index + 1}. Dr. ${doc.name} - Rs. ${doc.fees}`
+                    ).join('\n')}`;
+            } else {
+                // Default data-driven response
+                response = isUrdu ? 
+                    `🩺 آپ کی علامات کی بنیاد پر، آپ کو ${detectedSpecialty} سے مشاورت کرنی چاہیے۔ یہاں دستیاب ڈاکٹر ہیں:\n\n${recommendedDoctors.map((doc, index) => 
+                        `${index + 1}. ڈاکٹر ${doc.name}\n   🏥 ${doc.speciality}\n   🎓 ${doc.degree}\n   💰 Rs. ${doc.fees}\n   📍 ${doc.address?.line1 || 'Medical Center'}\n   ${doc.available ? '✅ دستیاب' : '❌ غیر دستیاب'}`
+                    ).join('\n\n')}\n\nکیا آپ ان میں سے کسی کے ساتھ اپائنٹمنٹ بکوانا چاہیں گے؟` :
+                    `🩺 Based on your symptoms, you should consult a ${detectedSpecialty}. Here are available doctors:\n\n${recommendedDoctors.map((doc, index) => 
+                        `${index + 1}. Dr. ${doc.name}\n   🏥 ${doc.speciality}\n   🎓 ${doc.degree}\n   💰 Rs. ${doc.fees}\n   📍 ${doc.address?.line1 || 'Medical Center'}\n   ${doc.available ? '✅ Available' : '❌ Unavailable'}`
+                    ).join('\n\n')}\n\nWould you like to book an appointment with any of these doctors?`;
             }
+            
+            console.log(`✅ Data-driven response generated: ${response.length} characters`);
+        } else {
+            // Fallback to chatbot logic only if no doctors or specialty
+            console.log(`⚠️ No doctors or specialty detected, using chatbot logic`);
+            response = chatbotLogic.generateResponse(sessionId, message, recommendedDoctors, isUrdu);
         }
-        
-        else if (lowerMessage.includes('book') || lowerMessage.includes('appointment') || lowerMessage.includes('mila karna')) {
-            response = isUrdu ? 
-                "میں آپ کی اپائنٹمنٹ بکوانے میں مدد کر سکتا ہوں! آپ کو کس قسم کا ڈاکٹر چاہیے؟" :
-                "I can help you book an appointment! What type of doctor do you need?";
-        }
-        
-        else if (lowerMessage.includes('fever') || lowerMessage.includes('bukhar') || lowerMessage.includes('sar dard')) {
-            response = isUrdu ? 
-                "سمجھتا ہوں کہ آپ علامات سے گزر رہے ہیں۔ صحیح تشخیص کے لیے ڈاکٹر سے مشورہ کریں۔ کیا میں آپ کی اپائنٹمنٹ بکوا دوں؟" :
-                "I understand you're experiencing symptoms. For proper diagnosis, please consult a doctor. Would you like me to book an appointment?";
-        }
-        
-        else if (lowerMessage.includes('thank') || lowerMessage.includes('shukria') || lowerMessage.includes('meherbani')) {
-            response = isUrdu ? 
-                "آپ کا بہت شکریہ! کیا اور کوئی مدد چاہیے؟" :
-                "You're very welcome! Is there anything else I can help you with?";
-        }
-        
-        else if (lowerMessage.includes('bye') || lowerMessage.includes('allah hafiz') || lowerMessage.includes('khuda hafiz')) {
-            response = isUrdu ? 
-                "اللہ حافظ! آپ اپنی صحت کا خیال رکھیں۔ میں ہر وقت آپ کی خدمت میں موجود ہوں۔" :
-                "Goodbye! Take care of your health. I'm here 24/7 if you need help.";
-        }
-        
-        // Default response with language detection
-        else {
-            response = isUrdu ? 
-                "میں آپ کی میڈیکل سوالات میں مدد کرنے کے لیے ہوں! آپ مجھ سے اپائنٹمنٹ، ڈاکٹر کی معلومات، یا صحت سے متعلق کچھ بھی پوچھ سکتے ہیں۔" :
-                "I'm here to help with your medical questions! You can ask me about appointments, doctor information, or health-related topics.";
-        }
+
+        console.log(`💬 Generated response type: ${detectedIntent}`);
+        console.log(`🏥 Final specialty: ${detectedSpecialty}`);
+        console.log(`👨‍⚕️ Doctors returned: ${recommendedDoctors.length}`);
+        console.log(`📝 Response length: ${response.length} characters`);
+        console.log('🏁 === INTELLIGENT ASSISTANT COMPLETE ===\n');
 
         res.json({ 
             success: true, 
             response,
+            detectedSpecialty,
+            detectedIntent,
+            recommendedDoctors: recommendedDoctors.map(doc => ({
+                _id: doc._id,
+                name: doc.name,
+                speciality: doc.speciality,
+                degree: doc.degree,
+                fees: doc.fees,
+                address: doc.address,
+                available: doc.available
+            })),
+            sessionId: sessionId,
             detectedLanguage: isUrdu ? 'Urdu' : 'English',
             timestamp: new Date().toISOString()
         });
 
     } catch (error) {
-        console.error("AI Controller Error:", error);
+        console.error("❌ AI Controller Error:", error);
         res.json({ 
             success: false, 
             message: "I'm having trouble processing your request right now. Please try again later." 
