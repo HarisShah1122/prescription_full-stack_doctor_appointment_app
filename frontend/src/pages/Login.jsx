@@ -18,50 +18,114 @@ const Login = () => {
 
   const onSubmitHandler = async (e) => {
     e.preventDefault();
+    console.log('🔘 Form submitted - State:', state);
+    console.log('📧 Email:', email);
+    console.log('👤 Name:', name);
+    console.log('🔐 Password length:', password?.length);
+    
+    if (!email || !password) {
+      toast.error("Please fill in all required fields");
+      return;
+    }
+    
+    if (state === "Sign Up" && !name) {
+      toast.error("Please enter your name");
+      return;
+    }
+    
     try {
       if (state === "Sign Up") {
+        console.log('📝 Attempting signup...');
+        // Fix: Use withCredentials for cookies
         const { data } = await axios.post(`${backendUrl}/api/user/register`, {
           name,
           email,
           password,
+        }, {
+          withCredentials: true, // Important for cookies
         });
 
+        console.log('📋 Signup response:', data);
+
         if (data.success) {
-          localStorage.setItem("token", data.token);
-          setToken(data.token);
+          // Handle new response format
+          const userToken = data.data?.token || data.token;
+          const userData = data.data?.user;
+          
+          if (userToken) {
+            localStorage.setItem("token", userToken);
+            setToken(userToken);
+          }
+          
+          // Store user data if available
+          if (userData) {
+            localStorage.setItem("userData", JSON.stringify(userData));
+          }
+          
           toast.success("Account created successfully!");
           navigate(isAdminLogin ? "/admin-dashboard" : "/");
-        } else toast.error(data.message);
+        } else {
+          console.error('❌ Signup failed:', data.message);
+          toast.error(data.message || "Failed to create account");
+        }
       } else {
         // Check if this is admin login
         if (isAdminLogin) {
+          console.log('👨‍⚕️ Attempting admin login...');
           const { data } = await axios.post(`${backendUrl}/api/admin/login`, {
             email,
             password,
+          }, {
+            withCredentials: true,
           });
 
           if (data.success) {
             localStorage.setItem("aToken", data.token);
             toast.success("Admin login successful!");
             navigate("/admin-dashboard");
-          } else toast.error(data.message);
+          } else {
+            toast.error(data.message || "Admin login failed");
+          }
         } else {
+          console.log('🔐 Attempting user login...');
+          // Fix: User login with proper credentials handling
           const { data } = await axios.post(`${backendUrl}/api/user/login`, {
             email,
             password,
+          }, {
+            withCredentials: true, // Important for HTTP-only cookies
           });
 
+          console.log('📋 Login response:', data);
+
           if (data.success) {
-            localStorage.setItem("token", data.token);
-            setToken(data.token);
+            // Handle new response format
+            const userToken = data.data?.token || data.token;
+            const userData = data.data?.user;
+            
+            if (userToken) {
+              localStorage.setItem("token", userToken);
+              setToken(userToken);
+            }
+            
+            // Store user data if available
+            if (userData) {
+              localStorage.setItem("userData", JSON.stringify(userData));
+            }
+            
             toast.success("Login successful!");
             navigate("/");
-          } else toast.error(data.message);
+          } else {
+            console.error('❌ Login failed:', data.message);
+            toast.error(data.message || "Login failed");
+          }
         }
       }
     } catch (err) {
-      console.error(err);
-      toast.error("Server error — check console for details.");
+      console.error("💥 Login/Signup error:", err);
+      console.error("📋 Error response:", err.response?.data);
+      const errorMessage = err.response?.data?.message || err.message || "Server error";
+      toast.error(errorMessage);
     }
   };
 
@@ -97,9 +161,9 @@ const Login = () => {
             onChange={(e) => setEmail(e.target.value)}
             value={email}
             className="border border-[#DADADA] rounded w-full p-2 mt-1"
-            type="email"
-            required
-          />
+              type="email"
+              required
+            />
         </div>
 
         <div className="w-full">
@@ -113,7 +177,7 @@ const Login = () => {
           />
         </div>
 
-        <button className="bg-primary text-white w-full py-2 my-2 rounded-md text-base">
+        <button className="bg-primary text-white w-full py-2 my-2 rounded-md text-base" type="submit">
           {state === "Sign Up" ? "Create account" : "Login"}
         </button>
 
