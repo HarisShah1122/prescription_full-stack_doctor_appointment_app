@@ -108,59 +108,362 @@ const verifyStripe = async (req, res) => {
 
 // ------------------- User Authentication -------------------
 
-// Register user
+// Register user - Enhanced with session management and proper response
 const registerUser = async (req, res) => {
     try {
+        console.log('📝 Registration attempt received');
+        console.log('📧 Email:', req.body.email);
+        console.log('👤 Name:', req.body.name);
+        
         const { name, email, password } = req.body;
-
+        
+        // Input validation
         if (!name || !email || !password) {
-            return res.json({ success: false, message: "Missing Details" });
+            console.log('❌ Missing registration details');
+            return res.status(400).json({ 
+                success: false, 
+                message: "Missing Details",
+                code: 'MISSING_DETAILS'
+            });
         }
+        
         if (!validator.isEmail(email)) {
-            return res.json({ success: false, message: "Invalid email" });
+            console.log('❌ Invalid email format');
+            return res.status(400).json({ 
+                success: false, 
+                message: "Invalid email",
+                code: 'INVALID_EMAIL'
+            });
         }
+        
         if (password.length < 8) {
-            return res.json({ success: false, message: "Password too weak" });
+            console.log('❌ Password too weak');
+            return res.status(400).json({ 
+                success: false, 
+                message: "Password too weak",
+                code: 'PASSWORD_TOO_WEAK'
+            });
         }
 
-        const hashedPassword = await bcrypt.hash(password, await bcrypt.genSalt(10));
-        const user = await new userModel({ name, email, password: hashedPassword }).save();
+        // Check if user already exists
+        const existingUser = await userModel.findOne({ email });
+        if (existingUser) {
+            console.log('❌ User already exists:', email);
+            return res.status(400).json({
+                success: false,
+                message: "User already exists with this email",
+                code: 'USER_EXISTS'
+            });
+        }
 
-        const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
-        res.json({ success: true, token });
+        // Hash password
+        console.log('🔐 Hashing password...');
+        const hashedPassword = await bcrypt.hash(password, await bcrypt.genSalt(10));
+        
+        // Create user
+        console.log('👤 Creating new user...');
+        const user = await new userModel({ 
+            name, 
+            email, 
+            password: hashedPassword,
+            active: true,
+            createdAt: new Date()
+        }).save();
+
+        // Generate JWT token for auto-login
+        console.log('🎫 Generating token for new user...');
+        const tokenPayload = {
+            id: user._id,
+            email: user.email,
+            role: user.role || 'user',
+            loginTime: Date.now()
+        };
+
+        const token = jwt.sign(tokenPayload, process.env.JWT_SECRET, {
+            expiresIn: '1h',
+            algorithm: 'HS256',
+            issuer: 'prescription-app',
+            audience: 'prescription-users'
+        });
+
+        // Set session data
+        if (req.session) {
+            req.session.user = {
+                id: user._id,
+                email: user.email,
+                name: user.name,
+                role: user.role || 'user'
+            };
+            req.session.token = token;
+            req.session.loginTime = Date.now();
+            req.session.ip = req.ip;
+            console.log('🔐 Session data set for new user');
+        }
+
+        // Set HTTP-only cookie with exact required format
+        res.cookie('token', token, {
+            httpOnly: true,
+            sameSite: "lax",
+            secure: false,
+            maxAge: 60 * 60 * 1000, // 1 hour
+            path: '/'
+        });
+        console.log('🍪 Cookie set with token:', token.substring(0, 20) + '...');
+
+        // Prepare user data for response
+        const userData = {
+            id: user._id,
+            name: user.name,
+            email: user.email,
+            role: user.role || 'user',
+            profileImage: user.image || null,
+            createdAt: user.createdAt
+        };
+
+        console.log('✅ Registration successful for:', email);
+        console.log('🎫 Token generated, session created');
+
+        // Success response (consistent with login format)
+        res.status(201).json({
+            success: true,
+            message: 'Account created successfully',
+            data: {
+                user: userData,
+                token: token, // Include token for backward compatibility
+                expiresIn: '1h',
+                tokenType: 'Bearer'
+            },
+            timestamp: new Date().toISOString()
+        });
+
     } catch (error) {
-        console.error(error);
-        res.json({ success: false, message: error.message });
+        console.error('❌ Registration error:', error);
+        console.error('🔍 Error stack:', error.stack);
+        
+        // Handle duplicate key error
+        if (error.code === 11000) {
+            return res.status(400).json({
+                success: false,
+                message: "User already exists with this email",
+                code: 'USER_EXISTS'
+            });
+        }
+        
+        res.status(500).json({
+            success: false,
+            message: 'Registration failed. Please try again.',
+            code: 'REGISTRATION_ERROR',
+            timestamp: new Date().toISOString()
+        });
     }
 };
 
-// Login user
+// Enhanced secure login with JWT, session management, and comprehensive validation
 const loginUser = async (req, res) => {
     try {
+        console.log('🔐 Login attempt received');
+        console.log('📧 Email:', req.body.email);
+        console.log('🌐 IP:', req.ip);
+        console.log('🔍 User-Agent:', req.get('User-Agent'));
+
+        // Input validation
         const { email, password } = req.body;
+        
+        if (!email || !password) {
+            console.log('❌ Missing credentials');
+            return res.status(400).json({
+                success: false,
+                message: 'Email and password are required',
+                code: 'MISSING_CREDENTIALS'
+            });
+        }
+
+        // Email format validation
+        if (!validator.isEmail(email)) {
+            console.log('❌ Invalid email format');
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid email format',
+                code: 'INVALID_EMAIL'
+            });
+        }
+
+        // Find user with password
+        console.log('🔍 Looking up user...');
         const user = await userModel.findOne({ email }).select('+password');
-        if (!user) return res.json({ success: false, message: "User does not exist" });
+        
+        if (!user) {
+            console.log('❌ User not found:', email);
+            return res.status(401).json({
+                success: false,
+                message: 'Invalid email or password',
+                code: 'INVALID_CREDENTIALS'
+            });
+        }
 
+        // Check account status
+        if (!user.active) {
+            console.log('❌ Account deactivated:', email);
+            return res.status(401).json({
+                success: false,
+                message: 'Account is deactivated. Please contact support.',
+                code: 'ACCOUNT_DEACTIVATED'
+            });
+        }
+
+        // Verify password
+        console.log('🔑 Verifying password...');
         const isMatch = await bcrypt.compare(password, user.password);
-        if (!isMatch) return res.json({ success: false, message: "Invalid credentials" });
+        
+        if (!isMatch) {
+            console.log('❌ Password mismatch for:', email);
+            return res.status(401).json({
+                success: false,
+                message: 'Invalid email or password',
+                code: 'INVALID_CREDENTIALS'
+            });
+        }
 
-        const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
-        res.json({ success: true, token });
+        // Generate JWT token
+        console.log('✅ Password verified, generating token...');
+        const tokenPayload = {
+            id: user._id,
+            email: user.email,
+            role: user.role || 'user',
+            loginTime: Date.now()
+        };
+
+        const token = jwt.sign(tokenPayload, process.env.JWT_SECRET, {
+            expiresIn: '1h',
+            algorithm: 'HS256',
+            issuer: 'prescription-app',
+            audience: 'prescription-users'
+        });
+
+        // Update last login
+        await userModel.findByIdAndUpdate(user._id, {
+            lastLogin: new Date(),
+            lastLoginIP: req.ip,
+            lastLoginUserAgent: req.get('User-Agent')
+        });
+
+        // Set session data
+        if (req.session) {
+            req.session.user = {
+                id: user._id,
+                email: user.email,
+                name: user.name,
+                role: user.role || 'user'
+            };
+            req.session.token = token;
+            req.session.loginTime = Date.now();
+            req.session.ip = req.ip;
+            console.log('🔐 Session data set');
+        }
+
+        // Set HTTP-only cookie with exact required format
+        res.cookie('token', token, {
+            httpOnly: true,
+            sameSite: "lax",
+            secure: false,
+            maxAge: 60 * 60 * 1000, // 1 hour
+            path: '/'
+        });
+        console.log('🍪 Cookie set with token:', token.substring(0, 20) + '...');
+
+        // Prepare user data for response
+        const userData = {
+            id: user._id,
+            name: user.name,
+            email: user.email,
+            role: user.role || 'user',
+            profileImage: user.image || null,
+            createdAt: user.createdAt
+        };
+
+        console.log('✅ Login successful for:', email);
+        console.log('🎫 Token generated, session created');
+
+        // Success response
+        res.status(200).json({
+            success: true,
+            message: 'Login successful',
+            data: {
+                user: userData,
+                token: token, // Include token for backward compatibility
+                expiresIn: '1h',
+                tokenType: 'Bearer'
+            },
+            timestamp: new Date().toISOString()
+        });
+
     } catch (error) {
-        console.error(error);
-        res.json({ success: false, message: error.message });
+        console.error('❌ Login error:', error);
+        console.error('🔍 Error stack:', error.stack);
+        
+        res.status(500).json({
+            success: false,
+            message: 'Internal server error during login',
+            code: 'LOGIN_ERROR',
+            timestamp: new Date().toISOString()
+        });
     }
 };
 
-// Get user profile
+// Get user profile - Enhanced to work with multiple auth sources
 const getProfile = async (req, res) => {
     try {
-        const userId = req.userId; // Get from auth middleware
+        console.log('👤 Profile request received');
+        console.log('🔍 User ID from auth middleware:', req.userId);
+        console.log('🔍 User data from auth middleware:', req.user);
+        
+        // Get userId from enhanced auth middleware
+        const userId = req.userId || req.user?.id;
+        
+        if (!userId) {
+            console.log('❌ No user ID found in request');
+            return res.status(401).json({
+                success: false,
+                message: 'Authentication required',
+                code: 'USER_ID_MISSING'
+            });
+        }
+        
+        console.log('🔍 Fetching user profile for ID:', userId);
         const userData = await userModel.findById(userId).select("-password");
-        res.json({ success: true, userData });
+        
+        if (!userData) {
+            console.log('❌ User not found in database');
+            return res.status(404).json({
+                success: false,
+                message: 'User not found',
+                code: 'USER_NOT_FOUND'
+            });
+        }
+        
+        console.log('✅ User profile found:', userData.email);
+        
+        // Return user data in expected format
+        res.status(200).json({
+            success: true,
+            userData: {
+                id: userData._id,
+                name: userData.name,
+                email: userData.email,
+                role: userData.role || 'user',
+                profileImage: userData.image || null,
+                createdAt: userData.createdAt,
+                lastLogin: userData.lastLogin,
+                active: userData.active !== false
+            }
+        });
     } catch (error) {
-        console.error(error);
-        res.json({ success: false, message: error.message });
+        console.error('❌ Profile fetch error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to fetch user profile',
+            code: 'PROFILE_FETCH_ERROR'
+        });
     }
 };
 
