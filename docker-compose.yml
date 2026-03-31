@@ -1,0 +1,90 @@
+version: '3.8'
+
+services:
+  # MongoDB Database
+  mongodb:
+    image: mongo:6.0
+    container_name: prescription_mongodb
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password123
+      MONGO_INITDB_DATABASE: prescription_full-stack_doctor
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+      - ./backend/seed-mock-data.js:/docker-entrypoint-initdb.d/seed-mock-data.js:ro
+    networks:
+      - prescription_network
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # Backend API
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: prescription_backend
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 4000
+      MONGO_URI: mongodb://admin:password123@mongodb:27017/prescription_full-stack_doctor?authSource=admin
+      JWT_SECRET: ${JWT_SECRET:-your_super_secret_jwt_key_here}
+      CLOUDINARY_CLOUD_NAME: ${CLOUDINARY_CLOUD_NAME:-your_cloud_name}
+      CLOUDINARY_API_KEY: ${CLOUDINARY_API_KEY:-your_api_key}
+      CLOUDINARY_API_SECRET: ${CLOUDINARY_API_SECRET:-your_api_secret}
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-your_stripe_secret_key}
+      CURRENCY: PKR
+      ADMIN_EMAIL: admin@mmc.com
+      ADMIN_PASSWORD: admin123
+    ports:
+      - "4000:4000"
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    networks:
+      - prescription_network
+    volumes:
+      - backend_uploads:/app/uploads
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:4000/api/user/list', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Frontend Application
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: prescription_frontend
+    restart: unless-stopped
+    environment:
+      VITE_BACKEND_URL: http://localhost:4000
+    ports:
+      - "80:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - prescription_network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  mongodb_data:
+    driver: local
+  backend_uploads:
+    driver: local
+
+networks:
+  prescription_network:
+    driver: bridge

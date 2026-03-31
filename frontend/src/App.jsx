@@ -8,6 +8,8 @@ import Navbar from './components/Navbar'
 import Sidebar from "./admin/src/components/Sidebar"
 import Footer from './components/Footer'
 import AIChatbot from './components/AIChatbot'
+import ProtectedRoute from './components/ProtectedRoute'
+import AuthGuard from './components/AuthGuard'
 
 // user pages
 import Home from './pages/Home'
@@ -35,41 +37,45 @@ import DoctorProfile from './admin/src/pages/Doctor/DoctorProfile.jsx'
 
 const App = () => {
   return (
-    <div className="mx-4 sm:mx-[10%]">
-      <ToastContainer />
-      <Navbar />
+    <AuthGuard>
+      <div className="mx-4 sm:mx-[10%]">
+        <ToastContainer />
+        <Navbar />
 
-      <Routes>
-        {/* ✅ user routes */}
-        <Route path="/admin-login-test" element={<AdminLoginTest />} />
-        <Route path="/test-connection" element={<TestConnection />} />
-        <Route path="/" element={<Home />} />
-        <Route path="/doctors" element={<Doctors />} />
-        <Route path="/doctors/:speciality" element={<Doctors />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/admin-login" element={<Login />} />
-        <Route path="/about" element={<About />} />
-        <Route path="/contact" element={<Contact />} />
-        <Route path="/appointment/:docId" element={<Appointment />} />
-        <Route path="/my-appointments" element={<MyAppointments />} />
-        <Route path="/my-profile" element={<MyProfile />} />
-        <Route path="/verify" element={<Verify />} />
+        <Routes>
+          {/* ✅ Public routes */}
+          <Route path="/admin-login-test" element={<AdminLoginTest />} />
+          <Route path="/test-connection" element={<TestConnection />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/admin-login" element={<Login />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/contact" element={<Contact />} />
 
-        {/* ✅ admin routes */}
-        <Route path="/admin-dashboard" element={<AdminDashboard />} />
-        <Route path="/all-appointments" element={<><Sidebar /><AllAppointments /></>} />
-        <Route path="/add-doctor" element={<><Sidebar /><AddDoctor /></>} />
-        <Route path="/doctor-list" element={<><Sidebar /><DoctorList /></>} />
+          {/* ✅ Protected user routes */}
+          <Route path="/" element={<ProtectedRoute requiredRole={null}><Home /></ProtectedRoute>} />
+          <Route path="/doctors" element={<ProtectedRoute requiredRole={null}><Doctors /></ProtectedRoute>} />
+          <Route path="/doctors/:speciality" element={<ProtectedRoute requiredRole={null}><Doctors /></ProtectedRoute>} />
+          <Route path="/appointment/:docId" element={<ProtectedRoute requiredRole={null}><Appointment /></ProtectedRoute>} />
+          <Route path="/my-appointments" element={<ProtectedRoute requiredRole={null}><MyAppointments /></ProtectedRoute>} />
+          <Route path="/my-profile" element={<ProtectedRoute requiredRole={null}><MyProfile /></ProtectedRoute>} />
+          <Route path="/verify" element={<ProtectedRoute requiredRole={null}><Verify /></ProtectedRoute>} />
 
-        {/* ✅ doctor routes */}
-        <Route path="/doctor-dashboard" element={<DoctorDashboard />} />
-        <Route path="/doctor-appointments" element={<><Sidebar /><DoctorAppointments /></>} />
-        <Route path="/doctor-profile" element={<><Sidebar /><DoctorProfile /></>} />
-      </Routes>
+          {/* ✅ Protected admin routes */}
+          <Route path="/admin-dashboard" element={<ProtectedRoute adminOnly><AdminDashboard /></ProtectedRoute>} />
+          <Route path="/all-appointments" element={<ProtectedRoute adminOnly><><Sidebar /><AllAppointments /></></ProtectedRoute>} />
+          <Route path="/add-doctor" element={<ProtectedRoute adminOnly><><Sidebar /><AddDoctor /></></ProtectedRoute>} />
+          <Route path="/doctor-list" element={<ProtectedRoute adminOnly><><Sidebar /><DoctorList /></></ProtectedRoute>} />
 
-      <Footer />
-      <AIChatbot />
-    </div>
+          {/* ✅ Protected doctor routes */}
+          <Route path="/doctor-dashboard" element={<ProtectedRoute requiredRole={null}><DoctorDashboard /></ProtectedRoute>} />
+          <Route path="/doctor-appointments" element={<ProtectedRoute requiredRole={null}><><Sidebar /><DoctorAppointments /></></ProtectedRoute>} />
+          <Route path="/doctor-profile" element={<ProtectedRoute requiredRole={null}><><Sidebar /><DoctorProfile /></></ProtectedRoute>} />
+        </Routes>
+
+        <Footer />
+        <AIChatbot />
+      </div>
+    </AuthGuard>
   )
 }
 

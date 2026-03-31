@@ -4,16 +4,13 @@ import { NavLink, useNavigate } from 'react-router-dom'
 import { AppContext } from '../context/AppContext'
 
 const Navbar = () => {
-
   const navigate = useNavigate()
-
   const [showMenu, setShowMenu] = useState(false)
-  const { token, setToken, userData } = useContext(AppContext)
+  const { token, setToken, userData, logout, isAuthenticated, isAdminAuthenticated } = useContext(AppContext)
 
-  const logout = () => {
-    localStorage.removeItem('token')
-    setToken(false)
-    navigate('/login')
+  const handleLogout = async () => {
+    await logout();
+    navigate('/login');
   }
 
   return (
@@ -40,15 +37,15 @@ const Navbar = () => {
 
       <div className='flex items-center gap-4 '>
         {
-          token && userData
+          isAuthenticated && userData
             ? <div className='flex items-center gap-2 cursor-pointer group relative'>
-              <img className='w-8 rounded-full' src={userData.image} alt="" />
+              <img className='w-8 rounded-full' src={userData.image || assets.default_profile} alt="" />
               <img className='w-2.5' src={assets.dropdown_icon} alt="" />
               <div className='absolute top-0 right-0 pt-14 text-base font-medium text-gray-600 z-20 hidden group-hover:block'>
                 <div className='min-w-48 bg-gray-50 rounded flex flex-col gap-4 p-4'>
-                  <p onClick={() => navigate('/my-profile')} className='hover:text-black cursor-pointer'>My Profile</p>
-                  <p onClick={() => navigate('/my-appointments')} className='hover:text-black cursor-pointer'>My Appointments</p>
-                  <p onClick={logout} className='hover:text-black cursor-pointer'>Logout</p>
+                  <p onClick={() => {navigate('/my-profile'); setShowMenu(false)}} className='hover:text-black cursor-pointer'>My Profile</p>
+                  <p onClick={() => {navigate('/my-appointments'); setShowMenu(false)}} className='hover:text-black cursor-pointer'>My Appointments</p>
+                  <p onClick={handleLogout} className='hover:text-black cursor-pointer'>Logout</p>
                 </div>
               </div>
             </div>
@@ -67,6 +64,16 @@ const Navbar = () => {
             <NavLink onClick={() => setShowMenu(false)} to='/doctors' ><p className='px-4 py-2 rounded full inline-block'>ALL DOCTORS</p></NavLink>
             <NavLink onClick={() => setShowMenu(false)} to='/about' ><p className='px-4 py-2 rounded full inline-block'>ABOUT</p></NavLink>
             <NavLink onClick={() => setShowMenu(false)} to='/contact' ><p className='px-4 py-2 rounded full inline-block'>CONTACT</p></NavLink>
+            {isAuthenticated && (
+              <>
+                <NavLink onClick={() => setShowMenu(false)} to='/my-profile'><p className='px-4 py-2 rounded full inline-block'>MY PROFILE</p></NavLink>
+                <NavLink onClick={() => setShowMenu(false)} to='/my-appointments'><p className='px-4 py-2 rounded full inline-block'>MY APPOINTMENTS</p></NavLink>
+                <p onClick={() => {handleLogout(); setShowMenu(false)}} className='px-4 py-2 rounded full inline-block cursor-pointer hover:bg-gray-100'>LOGOUT</p>
+              </>
+            )}
+            {!isAuthenticated && (
+              <NavLink onClick={() => setShowMenu(false)} to='/login'><p className='px-4 py-2 rounded full inline-block bg-primary text-white'>LOGIN</p></NavLink>
+            )}
           </ul>
         </div>
       </div>

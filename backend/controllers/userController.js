@@ -106,6 +106,64 @@ const verifyStripe = async (req, res) => {
     }
 };
 
+// ------------------- Authentication -------------------
+
+// Logout user - Clear tokens and session
+const logoutUser = async (req, res) => {
+    try {
+        console.log('🔐 Logout request received');
+        console.log('👤 User ID:', req.userId);
+        console.log('🌐 IP:', req.ip);
+
+        // Clear HTTP-only cookie
+        res.clearCookie('token', {
+            httpOnly: true,
+            sameSite: "lax",
+            secure: false,
+            path: '/'
+        });
+        console.log('🍪 Cookie cleared');
+
+        // Clear session data
+        if (req.session) {
+            req.session.token = null;
+            req.session.user = null;
+            req.session.destroy((err) => {
+                if (err) {
+                    console.error('❌ Session destroy error:', err);
+                } else {
+                    console.log('🔐 Session destroyed');
+                }
+            });
+        }
+
+        // Update last logout time in database
+        if (req.userId) {
+            await userModel.findByIdAndUpdate(req.userId, {
+                lastLogout: new Date(),
+                lastLogoutIP: req.ip
+            });
+        }
+
+        console.log('✅ Logout successful');
+        
+        res.status(200).json({
+            success: true,
+            message: 'Logout successful',
+            timestamp: new Date().toISOString()
+        });
+
+    } catch (error) {
+        console.error('❌ Logout error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Logout failed',
+            code: 'LOGOUT_ERROR',
+            timestamp: new Date().toISOString()
+        });
+    }
+};
+
 // ------------------- User Authentication -------------------
 
 // Register user - Enhanced with session management and proper response
@@ -636,5 +694,6 @@ export {
     paymentEasyPaisa,
     paymentJazzCash,
     paymentStripe,
-    verifyStripe
+    verifyStripe,
+    logoutUser
 };

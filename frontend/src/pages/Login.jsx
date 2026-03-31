@@ -1,6 +1,5 @@
 import React, { useContext, useEffect, useState } from "react";
 import { AppContext } from "../context/AppContext";
-import axios from "axios";
 import { toast } from "react-toastify";
 import { useNavigate, useLocation } from "react-router-dom";
 
@@ -9,130 +8,51 @@ const Login = () => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
-  const { backendUrl, token, setToken } = useContext(AppContext);
+  const { backendUrl, isAuthenticated, isAdminAuthenticated, login, register } = useContext(AppContext);
 
   // Check if this is admin login based on URL
   const isAdminLogin = location.pathname === "/admin-login";
 
   const onSubmitHandler = async (e) => {
     e.preventDefault();
-    console.log('🔘 Form submitted - State:', state);
-    console.log('📧 Email:', email);
-    console.log('👤 Name:', name);
-    console.log('🔐 Password length:', password?.length);
+    setIsLoading(true);
     
     if (!email || !password) {
       toast.error("Please fill in all required fields");
+      setIsLoading(false);
       return;
     }
     
     if (state === "Sign Up" && !name) {
       toast.error("Please enter your name");
+      setIsLoading(false);
       return;
     }
     
     try {
+      let result;
+      
       if (state === "Sign Up") {
-        console.log('📝 Attempting signup...');
-        // Fix: Use withCredentials for cookies
-        const { data } = await axios.post(`${backendUrl}/api/user/register`, {
-          name,
-          email,
-          password,
-        }, {
-          withCredentials: true, // Important for cookies
-        });
-
-        console.log('📋 Signup response:', data);
-
-        if (data.success) {
-          // Handle new response format
-          const userToken = data.data?.token || data.token;
-          const userData = data.data?.user;
-          
-          if (userToken) {
-            localStorage.setItem("token", userToken);
-            setToken(userToken);
-          }
-          
-          // Store user data if available
-          if (userData) {
-            localStorage.setItem("userData", JSON.stringify(userData));
-          }
-          
-          toast.success("Account created successfully!");
-          navigate(isAdminLogin ? "/admin-dashboard" : "/");
-        } else {
-          console.error('❌ Signup failed:', data.message);
-          toast.error(data.message || "Failed to create account");
+        result = await register(name, email, password);
+        if (result.success) {
+          navigate("/", { replace: true });
         }
       } else {
-        // Check if this is admin login
-        if (isAdminLogin) {
-          console.log('👨‍⚕️ Attempting admin login...');
-          const { data } = await axios.post(`${backendUrl}/api/admin/login`, {
-            email,
-            password,
-          }, {
-            withCredentials: true,
-          });
-
-          if (data.success) {
-            localStorage.setItem("aToken", data.token);
-            toast.success("Admin login successful!");
-            navigate("/admin-dashboard");
-          } else {
-            toast.error(data.message || "Admin login failed");
-          }
-        } else {
-          console.log('🔐 Attempting user login...');
-          // Fix: User login with proper credentials handling
-          const { data } = await axios.post(`${backendUrl}/api/user/login`, {
-            email,
-            password,
-          }, {
-            withCredentials: true, // Important for HTTP-only cookies
-          });
-
-          console.log('📋 Login response:', data);
-
-          if (data.success) {
-            // Handle new response format
-            const userToken = data.data?.token || data.token;
-            const userData = data.data?.user;
-            
-            if (userToken) {
-              localStorage.setItem("token", userToken);
-              setToken(userToken);
-            }
-            
-            // Store user data if available
-            if (userData) {
-              localStorage.setItem("userData", JSON.stringify(userData));
-            }
-            
-            toast.success("Login successful!");
-            navigate("/");
-          } else {
-            console.error('❌ Login failed:', data.message);
-            toast.error(data.message || "Login failed");
-          }
+        result = await login(email, password, isAdminLogin);
+        if (result.success) {
+          navigate(isAdminLogin ? "/admin-dashboard" : "/", { replace: true });
         }
       }
     } catch (err) {
       console.error("💥 Login/Signup error:", err);
-      console.error("📋 Error response:", err.response?.data);
-      const errorMessage = err.response?.data?.message || err.message || "Server error";
-      toast.error(errorMessage);
+      toast.error("An unexpected error occurred");
+    } finally {
+      setIsLoading(false);
     }
   };
-
-  useEffect(() => {
-    if (token && !isAdminLogin) navigate("/");
-    if (localStorage.getItem("aToken") && isAdminLogin) navigate("/admin-dashboard");
-  }, [token, isAdminLogin]);
 
   return (
     <form onSubmit={onSubmitHandler} className="min-h-[80vh] flex items-center">
@@ -151,6 +71,7 @@ const Login = () => {
               className="border border-[#DADADA] rounded w-full p-2 mt-1"
               type="text"
               required
+              disabled={isLoading}
             />
           </div>
         )}
@@ -161,9 +82,10 @@ const Login = () => {
             onChange={(e) => setEmail(e.target.value)}
             value={email}
             className="border border-[#DADADA] rounded w-full p-2 mt-1"
-              type="email"
-              required
-            />
+            type="email"
+            required
+            disabled={isLoading}
+          />
         </div>
 
         <div className="w-full">
@@ -174,11 +96,23 @@ const Login = () => {
             className="border border-[#DADADA] rounded w-full p-2 mt-1"
             type="password"
             required
+            disabled={isLoading}
           />
         </div>
 
-        <button className="bg-primary text-white w-full py-2 my-2 rounded-md text-base" type="submit">
-          {state === "Sign Up" ? "Create account" : "Login"}
+        <button 
+          className="bg-primary text-white w-full py-2 my-2 rounded-md text-base flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed" 
+          type="submit"
+          disabled={isLoading}
+        >
+          {isLoading ? (
+            <>
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+              {state === "Sign Up" ? "Creating..." : "Logging in..."}
+            </>
+          ) : (
+            state === "Sign Up" ? "Create account" : "Login"
+          )}
         </button>
 
         {state === "Sign Up" ? (

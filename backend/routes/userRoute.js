@@ -16,6 +16,7 @@ import {
   paymentJazzCash,
   paymentStripe,
   verifyStripe,
+  logoutUser,
 } from '../controllers/userController.js';
 import { getAIResponse, getAvailableDoctors } from '../controllers/aiController.js';
 
@@ -31,6 +32,7 @@ userRouter.post("/update-profile", authUser, upload.single("image"), updateProfi
 userRouter.post("/book-appointment", authUser, bookAppointment);
 userRouter.get("/appointments", authUser, listAppointment);
 userRouter.post("/cancel-appointment", authUser, cancelAppointment);
+userRouter.post("/logout", authUser, logoutUser);
 
 // Payment routes (require authentication)
 userRouter.post("/payment-easypaisa", authUser, paymentEasyPaisa);

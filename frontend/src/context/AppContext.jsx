@@ -10,15 +10,63 @@ const AppContextProvider = (props) => {
   const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:4000';
 
   const [doctors, setDoctors] = useState([]);
-  const [token, setToken] = useState(localStorage.getItem('token') || '');
+  const [token, setToken] = useState(() => {
+    const storedToken = localStorage.getItem('token');
+    console.log('🔑 Initial token from localStorage:', storedToken ? 'exists' : 'none');
+    return storedToken || '';
+  });
   const [userData, setUserData] = useState(null);
-  const [aToken, setAToken] = useState(localStorage.getItem('aToken') || '');
+  const [aToken, setAToken] = useState(() => {
+    const storedAToken = localStorage.getItem('aToken');
+    console.log('🔑 Initial admin token from localStorage:', storedAToken ? 'exists' : 'none');
+    return storedAToken || '';
+  });
 
   // Configure axios defaults for credentials
   useEffect(() => {
     axios.defaults.withCredentials = true; // Important for HTTP-only cookies
     axios.defaults.baseURL = backendUrl;
     console.log('🔧 Axios configured with credentials:', axios.defaults.withCredentials);
+  }, [backendUrl]);
+
+  // Add axios response interceptor for token refresh
+  useEffect(() => {
+    const responseInterceptor = axios.interceptors.response.use(
+      (response) => response,
+      async (error) => {
+        const originalRequest = error.config;
+
+        // Handle 401 Unauthorized errors - but only for protected routes
+        if (error.response?.status === 401 && !originalRequest._retry) {
+          originalRequest._retry = true;
+          
+          // Don't clear tokens for profile requests - let the component handle it
+          if (originalRequest.url?.includes('/get-profile')) {
+            console.log('🔄 Profile auth failed, but not clearing tokens');
+            return Promise.reject(error);
+          }
+          
+          console.log('🔄 Token expired, attempting to refresh authentication...');
+          
+          // Clear invalid tokens and redirect to login
+          setToken('');
+          setUserData(null);
+          localStorage.removeItem('token');
+          localStorage.removeItem('userData');
+          
+          toast.error('Session expired. Please login again.');
+          
+          // Redirect to login page
+          window.location.href = '/login';
+        }
+
+        return Promise.reject(error);
+      }
+    );
+
+    return () => {
+      axios.interceptors.response.eject(responseInterceptor);
+    };
   }, [backendUrl]);
 
   // Fetch doctors from backend - Only fallback on truly empty data
@@ -49,44 +97,41 @@ const AppContextProvider = (props) => {
     }
   };
 
-  // Fetch logged-in user profile - Simplified
+  // Fetch logged-in user profile - Simplified and more robust
   const loadUserProfileData = async () => {
     try {
       console.log('👤 Loading user profile...');
       
-      // Primary: Try with HTTP-only cookies
+      // Only try to load profile if we have a token
+      if (!token) {
+        console.log('❌ No token available for profile load');
+        return;
+      }
+      
+      // Try with HTTP-only cookies first
       try {
         const { data } = await axios.get('/api/user/get-profile');
         if (data.success) {
           setUserData(data.userData);
           console.log('✅ Profile loaded via cookies');
           return;
-        } else {
-          console.log('❌ Profile API returned failure:', data.message);
         }
       } catch (cookieError) {
-        console.log('🔄 Cookie auth failed:', cookieError.response?.status);
-        if (cookieError.response?.status !== 401) {
-          // If it's not an auth error, it might be a server error
-          throw cookieError;
-        }
+        console.log('🔄 Cookie auth failed, trying token auth...');
       }
       
-      // Fallback: Try with Authorization header if we have a token
-      if (token) {
-        console.log('🔄 Trying token auth fallback...');
-        try {
-          const { data } = await axios.get('/api/user/get-profile', {
-            headers: { Authorization: `Bearer ${token}` },
-          });
-          if (data.success) {
-            setUserData(data.userData);
-            console.log('✅ Profile loaded via token');
-            return;
-          }
-        } catch (tokenError) {
-          console.log('❌ Token auth also failed');
+      // Fallback: Try with Authorization header
+      try {
+        const { data } = await axios.get('/api/user/get-profile', {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (data.success) {
+          setUserData(data.userData);
+          console.log('✅ Profile loaded via token');
+          return;
         }
+      } catch (tokenError) {
+        console.log('❌ Token auth also failed');
       }
       
       // Final fallback: Try localStorage userData
@@ -106,19 +151,169 @@ const AppContextProvider = (props) => {
       
     } catch (error) {
       console.error("Profile loading error:", error);
-      // Only show toast if we have a token (meaning user should be logged in)
-      if (token) {
-        toast.error("Failed to fetch user profile.");
-      }
+      // Don't show toast for profile loading errors to avoid spam
     }
   };
+
+  // Enhanced logout function
+  const logout = async () => {
+    try {
+      console.log('🔐 Logging out user...');
+      
+      // Call backend logout endpoint
+      await axios.post('/api/user/logout', {}, {
+        withCredentials: true
+      });
+      
+      console.log('✅ Backend logout successful');
+    } catch (error) {
+      console.error('❌ Backend logout error:', error);
+      // Continue with frontend logout even if backend fails
+    } finally {
+      // Clear frontend authentication data
+      setToken('');
+      setUserData(null);
+      setAToken('');
+      
+      // Clear localStorage
+      localStorage.removeItem('token');
+      localStorage.removeItem('userData');
+      localStorage.removeItem('aToken');
+      
+      // Clear axios default headers
+      delete axios.defaults.headers.common['Authorization'];
+      
+      console.log('🧹 Frontend data cleared');
+      toast.success('Logged out successfully');
+    }
+  };
+
+  // Enhanced login function with better error handling
+  const login = async (email, password, isAdmin = false) => {
+    try {
+      const endpoint = isAdmin ? '/api/admin/login' : '/api/user/login';
+      const { data } = await axios.post(endpoint, { email, password }, {
+        withCredentials: true
+      });
+
+      if (data.success) {
+        const userToken = data.data?.token || data.token;
+        const userData = data.data?.user;
+        
+        if (userToken) {
+          localStorage.setItem(isAdmin ? "aToken" : "token", userToken);
+          console.log('💾 Token saved to localStorage:', userToken.substring(0, 20) + '...');
+          if (isAdmin) {
+            setAToken(userToken);
+            console.log('🔐 Admin token set in state');
+          } else {
+            setToken(userToken);
+            console.log('🔐 User token set in state');
+            // Set userData immediately if available
+            if (userData) {
+              localStorage.setItem("userData", JSON.stringify(userData));
+              setUserData(userData);
+              console.log('👤 User data set in state');
+            }
+          }
+        }
+        
+        toast.success(`${isAdmin ? 'Admin' : 'User'} login successful!`);
+        return { success: true, data };
+      } else {
+        throw new Error(data.message || 'Login failed');
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      const errorMessage = error.response?.data?.message || error.message || 'Login failed';
+      toast.error(errorMessage);
+      return { success: false, error: errorMessage };
+    }
+  };
+
+  // Enhanced register function
+  const register = async (name, email, password) => {
+    try {
+      const { data } = await axios.post('/api/user/register', { name, email, password }, {
+        withCredentials: true
+      });
+
+      if (data.success) {
+        const userToken = data.data?.token || data.token;
+        const userData = data.data?.user;
+        
+        if (userToken) {
+          localStorage.setItem("token", userToken);
+          console.log('💾 Register token saved to localStorage:', userToken.substring(0, 20) + '...');
+          setToken(userToken);
+          console.log('🔐 Register token set in state');
+        }
+        
+        // Set userData immediately if available
+        if (userData) {
+          localStorage.setItem("userData", JSON.stringify(userData));
+          setUserData(userData);
+          console.log('👤 Register user data set in state');
+        }
+        
+        toast.success("Account created successfully!");
+        return { success: true, data };
+      } else {
+        throw new Error(data.message || 'Registration failed');
+      }
+    } catch (error) {
+      console.error('Registration error:', error);
+      const errorMessage = error.response?.data?.message || error.message || 'Registration failed';
+      toast.error(errorMessage);
+      return { success: false, error: errorMessage };
+    }
+  };
+
+  // Check authentication status on mount
+  const checkAuthStatus = async () => {
+    try {
+      // Only check if we don't already have tokens
+      const currentToken = localStorage.getItem('token');
+      const currentAToken = localStorage.getItem('aToken');
+      
+      console.log('🔍 Checking auth status...');
+      console.log('🔍 Current tokens:', { 
+        token: currentToken ? 'exists' : 'none', 
+        aToken: currentAToken ? 'exists' : 'none',
+        stateToken: token ? 'exists' : 'none',
+        stateAToken: aToken ? 'exists' : 'none'
+      });
+      
+      // Only update state if localStorage has tokens but state doesn't
+      if (currentToken && !token) {
+        setToken(currentToken);
+        console.log('🔄 Updated token from localStorage');
+        await loadUserProfileData();
+      }
+      
+      if (currentAToken && !aToken) {
+        setAToken(currentAToken);
+        console.log('🔄 Updated admin token from localStorage');
+      }
+      
+      console.log('🔍 Authentication status checked');
+    } catch (error) {
+      console.error('❌ Auth status check failed:', error);
+    }
+  };
+
+  useEffect(() => {
+    checkAuthStatus();
+  }, []);
 
   useEffect(() => {
     getDoctorsData();
   }, []);
 
   useEffect(() => {
-    loadUserProfileData();
+    if (token) {
+      loadUserProfileData();
+    }
   }, [token]);
 
   const value = {
@@ -133,6 +328,12 @@ const AppContextProvider = (props) => {
     aToken,
     setAToken,
     loadUserProfileData,
+    logout,
+    login,
+    register,
+    checkAuthStatus,
+    isAuthenticated: !!token && !!userData,
+    isAdminAuthenticated: !!aToken,
   };
 
   return (
