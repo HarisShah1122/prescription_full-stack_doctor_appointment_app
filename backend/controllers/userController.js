@@ -360,7 +360,7 @@ const loginUser = async (req, res) => {
         }
 
         // Check account status
-        if (!user.active) {
+        if (user.active === false) {
             console.log('❌ Account deactivated:', email);
             return res.status(401).json({
                 success: false,
