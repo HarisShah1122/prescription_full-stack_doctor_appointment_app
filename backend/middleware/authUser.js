@@ -64,6 +64,7 @@ const authUser = async (req, res, next) => {
         console.log('✅ Token verified successfully');
         console.log('👤 User ID:', decoded.id);
         console.log('👤 User Email:', decoded.email);
+        console.log('👤 Full decoded token:', decoded);
         
         // Attach user info to request
         req.user = {
@@ -72,7 +73,14 @@ const authUser = async (req, res, next) => {
             role: decoded.role || 'user'
         };
         
+        // Also attach userId for backward compatibility
+        req.userId = decoded.id;
+        
+        console.log('🎯 req.user attached:', req.user);
+        console.log('🎯 req.userId attached:', req.userId);
+        console.log('🎯 req.user.id type:', typeof req.user.id);
         console.log('🎯 Authentication successful, proceeding to next middleware');
+        console.log('🎯 Next middleware should receive req.user:', !!req.user);
         next();
         
     } catch (error) {

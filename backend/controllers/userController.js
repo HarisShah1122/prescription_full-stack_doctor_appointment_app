@@ -1,6 +1,7 @@
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import validator from "validator";
+import mongoose from "mongoose";
 import userModel from "../models/userModel.js";
 import doctorModel from "../models/doctorModel.js";
 import appointmentModel from "../models/appointmentModel.js";
@@ -112,7 +113,7 @@ const verifyStripe = async (req, res) => {
 const logoutUser = async (req, res) => {
     try {
         console.log('🔐 Logout request received');
-        console.log('👤 User ID:', req.userId);
+        console.log('👤 User ID:', req.user?.id);
         console.log('🌐 IP:', req.ip);
 
         // Clear HTTP-only cookie
@@ -138,8 +139,8 @@ const logoutUser = async (req, res) => {
         }
 
         // Update last logout time in database
-        if (req.userId) {
-            await userModel.findByIdAndUpdate(req.userId, {
+        if (req.user?.id) {
+            await userModel.findByIdAndUpdate(req.user?.id, {
                 lastLogout: new Date(),
                 lastLogoutIP: req.ip
             });
@@ -472,17 +473,17 @@ const loginUser = async (req, res) => {
 const getProfile = async (req, res) => {
     try {
         console.log('👤 Profile request received');
-        console.log('🔍 User ID from auth middleware:', req.userId);
+        console.log('🔍 User ID from auth middleware:', req.user?.id);
         console.log('🔍 User data from auth middleware:', req.user);
         
         // Get userId from enhanced auth middleware
-        const userId = req.userId || req.user?.id;
+        const userId = req.user?.id;
         
         if (!userId) {
             console.log('❌ No user ID found in request');
             return res.status(401).json({
                 success: false,
-                message: 'Authentication required',
+                message: 'User authentication required',
                 code: 'USER_ID_MISSING'
             });
         }
@@ -551,8 +552,71 @@ const updateProfile = async (req, res) => {
 // Book appointment
 const bookAppointment = async (req, res) => {
     try {
+        console.log('📅 BOOKING APPOINTMENT - START');
+        console.log('📅 Request body:', req.body);
+        console.log('📅 req.user:', req.user);
+        console.log('📅 req.userId:', req.userId);
+        
         const { docId, slotDate, slotTime } = req.body;
-        const userId = req.userId; // Get from auth middleware
+        
+        // Get user ID from multiple sources for safety
+        let userId = req.user?.id || req.userId;
+        
+        console.log('📅 Final userId:', userId);
+        console.log('📅 userId type:', typeof userId);
+        console.log('📅 userId is valid ObjectId:', mongoose.Types.ObjectId.isValid(userId));
+        
+        if (!userId) {
+            console.log('❌ User ID not found in request');
+            return res.status(401).json({
+                success: false,
+                message: 'User authentication required',
+                code: 'USER_ID_MISSING'
+            });
+        }
+        
+        // Validate ObjectId format
+        if (!mongoose.Types.ObjectId.isValid(userId)) {
+            console.log('❌ Invalid ObjectId format:', userId);
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid user ID format',
+                code: 'INVALID_USER_ID'
+            });
+        }
+        
+        // Fetch user with proper error handling
+        console.log('🔍 Fetching user from database...');
+        console.log('🔍 Using userModel.findById with ID:', userId);
+        console.log('🔍 userModel:', !!userModel);
+        
+        const userRecord = await userModel.findById(userId).select("-password");
+        
+        console.log('🔍 userRecord result:', !!userRecord);
+        console.log('🔍 userRecord type:', typeof userRecord);
+        
+        if (!userRecord) {
+            console.log('❌ User not found in database with ID:', userId);
+            console.log('❌ Stack trace:', new Error().stack);
+            
+            // Let's also check if there are any users in the database
+            const allUsers = await userModel.find({}).select('_id email name').limit(5);
+            console.log('🔍 Sample users in database:', allUsers.map(u => ({ id: u._id, email: u.email, name: u.name })));
+            
+            return res.status(404).json({
+                success: false,
+                message: 'User not found',
+                code: 'USER_NOT_FOUND',
+                debug: {
+                    userId: userId,
+                    userIdType: typeof userId,
+                    validObjectId: mongoose.Types.ObjectId.isValid(userId),
+                    totalUsers: await userModel.countDocuments()
+                }
+            });
+        }
+        
+        console.log('✅ User found in database:', userRecord.email);
         
         // Handle both ObjectId and string IDs from frontend assets
         let docData;
@@ -582,20 +646,29 @@ const bookAppointment = async (req, res) => {
             docData = await doctorModel.findById(docId).select("-password");
         }
 
-        if (!docData) return res.json({ success: false, message: "Doctor Not Found" });
+        if (!docData) {
+            return res.status(404).json({
+                success: false,
+                message: "Doctor Not Found",
+                code: 'DOCTOR_NOT_FOUND'
+            });
+        }
 
         const slots = docData.slots_booked || {};
         if (!slots[slotDate]) slots[slotDate] = [];
-        if (slots[slotDate].includes(slotTime)) return res.json({ success: false, message: "Slot Not Available" });
+        if (slots[slotDate].includes(slotTime)) {
+            return res.status(409).json({
+                success: false,
+                message: "Slot Not Available",
+                code: 'SLOT_NOT_AVAILABLE'
+            });
+        }
         slots[slotDate].push(slotTime);
 
-        const userData = await userModel.findById(userId).select("-password");
-        if (!userData) return res.json({ success: false, message: "User not found" });
-        
         const appointmentData = { 
             userId, 
             docId, 
-            userData: userData.toObject(), 
+            userData: userRecord.toObject(), 
             docData: docData.toObject(), 
             amount: docData.fees, 
             slotTime, 
@@ -609,8 +682,12 @@ const bookAppointment = async (req, res) => {
         await doctorModel.findByIdAndUpdate(updateId, { slots_booked: slots });
         res.json({ success: true, message: "Appointment Booked" });
     } catch (error) {
-        console.error(error);
-        res.json({ success: false, message: error.message });
+        console.error('❌ Book appointment error:', error);
+        res.status(500).json({
+            success: false,
+            message: error.message || 'Failed to book appointment',
+            code: 'BOOKING_ERROR'
+        });
     }
 };
 
@@ -618,10 +695,45 @@ const bookAppointment = async (req, res) => {
 const cancelAppointment = async (req, res) => {
     try {
         const { appointmentId } = req.body;
-        const userId = req.userId; // Get from auth middleware
+        const userId = req.user?.id || req.userId; // Get from auth middleware
+        
+        console.log('❌ Cancel appointment - User ID:', userId);
+        console.log('❌ Cancel appointment - Appointment ID:', appointmentId);
+        
+        if (!userId) {
+            return res.status(401).json({
+                success: false,
+                message: 'User authentication required',
+                code: 'USER_ID_MISSING'
+            });
+        }
+        
+        // Validate ObjectId format
+        if (!mongoose.Types.ObjectId.isValid(userId)) {
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid user ID format',
+                code: 'INVALID_USER_ID'
+            });
+        }
+        
         const appointment = await appointmentModel.findById(appointmentId);
 
-        if (appointment.userId !== userId) return res.json({ success: false, message: "Unauthorized" });
+        if (!appointment) {
+            return res.status(404).json({
+                success: false,
+                message: 'Appointment not found',
+                code: 'APPOINTMENT_NOT_FOUND'
+            });
+        }
+
+        if (appointment.userId.toString() !== userId) {
+            return res.status(403).json({
+                success: false,
+                message: 'Unauthorized',
+                code: 'UNAUTHORIZED'
+            });
+        }
 
         await appointmentModel.findByIdAndUpdate(appointmentId, { cancelled: true });
         
@@ -653,7 +765,13 @@ const cancelAppointment = async (req, res) => {
             docData = await doctorModel.findById(appointment.docId);
         }
         
-        if (!docData) return res.json({ success: false, message: "Doctor Not Found" });
+        if (!docData) {
+            return res.status(404).json({
+                success: false,
+                message: "Doctor Not Found",
+                code: 'DOCTOR_NOT_FOUND'
+            });
+        }
         
         const slots = docData.slots_booked || {};
         slots[appointment.slotDate] = (slots[appointment.slotDate] || []).filter(e => e !== appointment.slotTime);
@@ -672,7 +790,27 @@ const cancelAppointment = async (req, res) => {
 // List appointments
 const listAppointment = async (req, res) => {
     try {
-        const userId = req.userId; // Get from auth middleware
+        const userId = req.user?.id || req.userId; // Get from auth middleware
+        
+        console.log('📋 List appointments - User ID:', userId);
+        
+        if (!userId) {
+            return res.status(401).json({
+                success: false,
+                message: 'User authentication required',
+                code: 'USER_ID_MISSING'
+            });
+        }
+        
+        // Validate ObjectId format
+        if (!mongoose.Types.ObjectId.isValid(userId)) {
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid user ID format',
+                code: 'INVALID_USER_ID'
+            });
+        }
+        
         const appointments = await appointmentModel.find({ userId });
         res.json({ success: true, appointments });
     } catch (error) {
