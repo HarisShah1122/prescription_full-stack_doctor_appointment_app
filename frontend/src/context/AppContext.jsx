@@ -27,6 +27,20 @@ const AppContextProvider = (props) => {
     axios.defaults.withCredentials = true; // Important for HTTP-only cookies
     axios.defaults.baseURL = backendUrl;
     console.log('🔧 Axios configured with credentials:', axios.defaults.withCredentials);
+    
+    // Set up interceptor to always include token in headers
+    axios.interceptors.request.use((config) => {
+      const token = localStorage.getItem('token');
+      const aToken = localStorage.getItem('aToken');
+      
+      if (token && !config.url?.includes('/admin/')) {
+        config.headers.Authorization = `Bearer ${token}`;
+      } else if (aToken && config.url?.includes('/admin/')) {
+        config.headers.Authorization = `Bearer ${aToken}`;
+      }
+      
+      return config;
+    });
   }, [backendUrl]);
 
   // Add axios response interceptor for token refresh
@@ -170,18 +184,21 @@ const AppContextProvider = (props) => {
       console.error('❌ Backend logout error:', error);
       // Continue with frontend logout even if backend fails
     } finally {
-      // Clear frontend authentication data
+      // Clear frontend authentication data IMMEDIATELY
       setToken('');
       setUserData(null);
       setAToken('');
       
-      // Clear localStorage
+      // Clear localStorage IMMEDIATELY
       localStorage.removeItem('token');
       localStorage.removeItem('userData');
       localStorage.removeItem('aToken');
       
       // Clear axios default headers
       delete axios.defaults.headers.common['Authorization'];
+      
+      // Force redirect to login page
+      window.location.href = '/login';
       
       console.log('🧹 Frontend data cleared');
       toast.success('Logged out successfully');
@@ -191,36 +208,49 @@ const AppContextProvider = (props) => {
   // Enhanced login function with better error handling
   const login = async (email, password, isAdmin = false) => {
     try {
+      console.log('🔐 Attempting login for:', email);
+      
       const endpoint = isAdmin ? '/api/admin/login' : '/api/user/login';
       const { data } = await axios.post(endpoint, { email, password }, {
         withCredentials: true
       });
 
+      console.log('📨 Login response:', data);
+
       if (data.success) {
         const userToken = data.data?.token || data.token;
         const userData = data.data?.user;
         
+        console.log('🔑 Token received:', userToken ? 'YES' : 'NO');
+        console.log('👤 User data received:', userData ? 'YES' : 'NO');
+        
         if (userToken) {
+          // Store token in localStorage
           localStorage.setItem(isAdmin ? "aToken" : "token", userToken);
           console.log('💾 Token saved to localStorage:', userToken.substring(0, 20) + '...');
+          
+          // Store user data in localStorage
+          if (userData) {
+            localStorage.setItem("userData", JSON.stringify(userData));
+            console.log('� User data saved to localStorage');
+          }
+          
+          // Update React state
           if (isAdmin) {
             setAToken(userToken);
             console.log('🔐 Admin token set in state');
           } else {
             setToken(userToken);
-            console.log('🔐 User token set in state');
-            // Set userData immediately if available
-            if (userData) {
-              localStorage.setItem("userData", JSON.stringify(userData));
-              setUserData(userData);
-              console.log('👤 User data set in state');
-            }
+            setUserData(userData);
+            console.log('� User token and data set in state');
           }
         }
         
         toast.success(`${isAdmin ? 'Admin' : 'User'} login successful!`);
+        console.log('✅ Login completed successfully');
         return { success: true, data };
       } else {
+        console.log('❌ Login failed:', data.message);
         throw new Error(data.message || 'Login failed');
       }
     } catch (error) {
@@ -322,17 +352,14 @@ const AppContextProvider = (props) => {
     currencySymbol,
     backendUrl,
     token,
-    setToken,
-    userData,
-    setUserData,
     aToken,
-    setAToken,
-    loadUserProfileData,
-    logout,
+    userData,
     login,
     register,
+    logout,
     checkAuthStatus,
-    isAuthenticated: !!token && !!userData,
+    // Simplified authentication check - only require token for basic auth
+    isAuthenticated: !!token,
     isAdminAuthenticated: !!aToken,
   };
 

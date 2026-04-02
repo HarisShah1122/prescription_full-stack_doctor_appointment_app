@@ -17,9 +17,8 @@ const ProtectedRoute = ({ children, requiredRole = 'user', adminOnly = false }) 
       console.log('🔍 Admin token:', aToken ? 'exists' : 'missing');
       console.log('🔍 Admin only:', adminOnly);
       
-      // Check for user authentication
+      // Check for admin authentication
       if (adminOnly) {
-        // Admin routes require admin token
         if (!aToken) {
           console.log('🔐 Admin authentication required - redirecting to admin login');
           setIsAuthenticated(false);
@@ -31,7 +30,6 @@ const ProtectedRoute = ({ children, requiredRole = 'user', adminOnly = false }) 
         // User routes require user token only
         if (!token) {
           console.log('🔐 User authentication required - redirecting to login');
-          console.log('Token check:', { token: !!token, aToken: !!aToken });
           setIsAuthenticated(false);
           setIsLoading(false);
           return;
@@ -68,17 +66,6 @@ const ProtectedRoute = ({ children, requiredRole = 'user', adminOnly = false }) 
       toast.error('Please login to access this page');
       return <Navigate to="/login" state={{ from: location }} replace />;
     }
-  }
-
-  // Check role-based access if userData is available
-  if (userData && requiredRole && userData.role && userData.role !== requiredRole) {
-    console.log('🔍 Role check failed:', {
-      userRole: userData.role,
-      requiredRole,
-      userData: userData
-    });
-    toast.error(`Access denied. ${requiredRole} role required.`);
-    return <Navigate to="/" replace />;
   }
 
   return children;

@@ -26,29 +26,34 @@ const Login = () => {
       return;
     }
     
-    if (state === "Sign Up" && !name) {
-      toast.error("Please enter your name");
-      setIsLoading(false);
-      return;
-    }
-    
     try {
       let result;
       
       if (state === "Sign Up") {
+        console.log('🔐 Attempting registration for:', email);
         result = await register(name, email, password);
         if (result.success) {
-          navigate("/", { replace: true });
+          console.log('✅ Registration successful, redirecting to main page');
+          toast.success("Account created successfully! Please login.");
+          // Switch to login state after successful registration
+          setState("Login");
         }
       } else {
+        console.log('🔐 Attempting login for:', email);
         result = await login(email, password, isAdminLogin);
         if (result.success) {
+          console.log('✅ Login successful, redirecting to main page');
+          toast.success("Login successful!");
+          // Navigate to main page after successful login
           navigate(isAdminLogin ? "/admin-dashboard" : "/", { replace: true });
+        } else {
+          console.log('❌ Login failed:', result.error);
+          toast.error(result.error || "Login failed");
         }
       }
     } catch (err) {
       console.error("💥 Login/Signup error:", err);
-      toast.error("An unexpected error occurred");
+      toast.error(err.message || "An unexpected error occurred");
     } finally {
       setIsLoading(false);
     }
