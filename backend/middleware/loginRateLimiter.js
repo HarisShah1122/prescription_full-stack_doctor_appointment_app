@@ -12,10 +12,6 @@ const loginRateLimiter = rateLimit({
   },
   standardHeaders: true, // Return rate limit info in headers
   legacyHeaders: false, // Disable the `X-RateLimit-*` headers
-  keyGenerator: (req) => {
-    // Use IP address as the key for rate limiting
-    return req.ip || req.connection.remoteAddress || 'unknown';
-  },
   handler: (req, res) => {
     console.log('🚫 Rate limit exceeded for IP:', req.ip || req.connection.remoteAddress);
     console.log('🕐 Rate limit window: 15 minutes, max attempts: 5');
