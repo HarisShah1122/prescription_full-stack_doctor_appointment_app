@@ -9,6 +9,7 @@ import userRouter from "./routes/userRoute.js";
 import doctorRouter from "./routes/doctorRoute.js";
 import adminRouter from "./routes/adminRoute.js";
 import doctorDashboardRouter from "./routes/doctorDashboardRoute.js";
+import dashboardRouter from "./routes/dashboardRoute.js";
 
 // Initialize App
 const app = express();
@@ -59,9 +60,10 @@ app.use((req, res, next) => {
 
 // Routes
 app.use("/api/user", userRouter);
-app.use("/api/doctor", doctorRouter);
-app.use("/api/doctor", doctorDashboardRouter); // Dashboard routes under doctor
 app.use("/api/admin", adminRouter);
+app.use("/api/doctor", doctorRouter);
+app.use("/api/dashboard", dashboardRouter);
+app.use("/api/doctor", doctorDashboardRouter);
 
 // Health check endpoint
 app.get("/health", (req, res) => {
