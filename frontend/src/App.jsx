@@ -12,16 +12,17 @@ import ProtectedRoute from './components/ProtectedRoute'
 import AuthGuard from './components/AuthGuard'
 
 // user pages
-import Home from './pages/Home'
-import Doctors from './pages/Doctors'
-import Login from './pages/Login'
-import About from './pages/About'
-import Contact from './pages/Contact'
-import Appointment from './pages/Appointment'
-import MyAppointments from './pages/MyAppointments'
+import Home from './pages/Home.jsx';
+import Doctors from './pages/Doctors.jsx';
+import Login from './pages/Login.jsx';
+import About from './pages/About.jsx';
+import Contact from './pages/Contact.jsx';
+import Appointment from './pages/Appointment.jsx';
+import MyAppointments from './pages/MyAppointments.jsx';
 import MyProfile from './pages/MyProfile'
 import Verify from './pages/Verify'
 import TestConnection from './pages/TestConnection'
+import Dashboard from './pages/Dashboard.jsx';
 import AdminLoginTest from './components/AdminLoginTest'
 
 // admin pages
@@ -57,6 +58,7 @@ const App = () => {
           <Route path="/doctors/:speciality" element={<ProtectedRoute requiredRole={null}><Doctors /></ProtectedRoute>} />
           <Route path="/appointment/:docId" element={<ProtectedRoute requiredRole={null}><Appointment /></ProtectedRoute>} />
           <Route path="/my-appointments" element={<ProtectedRoute requiredRole={null}><MyAppointments /></ProtectedRoute>} />
+          <Route path="/dashboard" element={<ProtectedRoute requiredRole={null}><Dashboard /></ProtectedRoute>} />
           <Route path="/my-profile" element={<ProtectedRoute requiredRole={null}><MyProfile /></ProtectedRoute>} />
           <Route path="/verify" element={<ProtectedRoute requiredRole={null}><Verify /></ProtectedRoute>} />
 

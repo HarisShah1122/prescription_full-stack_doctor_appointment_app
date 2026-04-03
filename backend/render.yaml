@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: prescription-backend
+    env: node
+    plan: free
+    buildCommand: "npm install"
+    startCommand: "npm start"
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: JWT_SECRET
+        value: your-super-secret-jwt-key-change-this
+      - key: MONGODB_URI
+        value: mongodb+srv://username:password@cluster.mongodb.net/your-db-name
+      - key: CLOUDINARY_CLOUD_NAME
+        value: your-cloudinary-name
+      - key: CLOUDINARY_API_KEY
+        value: your-cloudinary-api-key
+      - key: CLOUDINARY_API_SECRET
+        value: your-cloudinary-api-secret
+      - key: FRONTEND_URL
+        value: https://your-frontend-url.vercel.app
