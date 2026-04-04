@@ -13,6 +13,12 @@ import {
     getPermissionMatrix,
     updatePermissionMatrix
 } from '../controllers/laboratoryController.js';
+import {
+    getLabTests as getLabTestsFixed,
+    getLabReports as getLabReportsFixed,
+    getLabBillings as getLabBillingsFixed,
+    getLabStats as getLabStatsFixed
+} from '../controllers/laboratoryControllerFixed.js';
 import { authorizeRoles, requirePermission } from '../middleware/roleAuth.js';
 import authUser from '../middleware/authUser.js';
 
@@ -52,8 +58,8 @@ router.put('/tests/:labId/:testId',
 
 // Get all lab tests - All authenticated users
 router.get('/tests',
-    authorizeRoles('admin', 'super_admin', 'doctor', 'lab_technician', 'patient'),
-    getLabTests
+    authUser,
+    getLabTestsFixed
 );
 
 // ==================== REPORT MANAGEMENT ====================
@@ -67,8 +73,8 @@ router.post('/reports',
 
 // Get lab reports - Based on role
 router.get('/reports',
-    authorizeRoles('admin', 'super_admin', 'doctor', 'lab_technician', 'patient'),
-    getLabReports
+    authUser,
+    getLabReportsFixed
 );
 
 // Upload report PDF - Lab Technician or Admin
@@ -90,8 +96,8 @@ router.post('/billing',
 
 // Get lab billings - Based on role
 router.get('/billing',
-    authorizeRoles('admin', 'super_admin', 'doctor', 'patient'),
-    getLabBillings
+    authUser,
+    getLabBillingsFixed
 );
 
 // Update payment status - Admin
@@ -118,57 +124,10 @@ router.put('/permissions/:role',
 
 // ==================== LABORATORY OPERATIONS ====================
 
-// Get laboratory statistics - Admin or Lab Technician
+// Get laboratory statistics - All authenticated users
 router.get('/stats',
-    authorizeRoles('admin', 'super_admin', 'lab_technician'),
-    async (req, res) => {
-        try {
-            const { laboratoryModel, labResultModel, reportModel, billingModel } = await import('../models/laboratoryModel.js');
-            
-            const [
-                totalLabs,
-                totalTests,
-                totalResults,
-                totalReports,
-                totalBilling,
-                pendingReports,
-                pendingBilling
-            ] = await Promise.all([
-                laboratoryModel.countDocuments({ isActive: true }),
-                laboratoryModel.aggregate([
-                    { $unwind: '$services' },
-                    { $match: { 'services.isActive': true } },
-                    { $count: 'total' }
-                ]),
-                labResultModel.countDocuments(),
-                reportModel.countDocuments(),
-                billingModel.countDocuments(),
-                reportModel.countDocuments({ status: { $in: ['Draft', 'Pending Review'] } }),
-                billingModel.countDocuments({ paymentStatus: 'Pending' })
-            ]);
-
-            res.json({
-                success: true,
-                data: {
-                    laboratories: totalLabs,
-                    tests: totalTests[0]?.total || 0,
-                    results: totalResults,
-                    reports: totalReports,
-                    billing: totalBilling,
-                    pendingReports,
-                    pendingBilling
-                }
-            });
-
-        } catch (error) {
-            console.error("Lab stats error:", error);
-            res.status(500).json({
-                success: false,
-                message: "Failed to fetch laboratory statistics",
-                error: error.message
-            });
-        }
-    }
+    authUser,
+    getLabStatsFixed
 );
 
 // Get laboratory performance metrics - Admin
@@ -178,7 +137,8 @@ router.get('/performance',
         try {
             const { laboratoryModel, labResultModel, reportModel } = await import('../models/laboratoryModel.js');
             
-            const { dateFrom, dateTo } = req.query;
+            const dateFrom = req.query.dateFrom;
+            const dateTo = req.query.dateTo;
             
             let dateFilter = {};
             if (dateFrom || dateTo) {
@@ -200,10 +160,16 @@ router.get('/performance',
                         name: 1,
                         labCode: 1,
                         totalResults: { $size: '$results' },
-                        completedResults: { $size: { $filter: { input: '$results', cond: { $eq: ['$$this.status', 'Completed'] } } }
+                        completedResults: { 
+  $size: { 
+    $filter: { 
+      input: '$results', 
+      cond: { $eq: ['$$this.status', 'Completed'] } 
+    } 
+  }
+}
                     }}
                 ]),
-                
                 // Test categories distribution
                 laboratoryModel.aggregate([
                     { $unwind: '$services' },
@@ -211,7 +177,6 @@ router.get('/performance',
                     { $group: { _id: '$services.category', count: { $sum: 1 } } },
                     { $sort: { count: -1 } }
                 ]),
-                
                 // Report statistics
                 reportModel.aggregate([
                     ...(dateFilter ? [{ $match: { reportDate: dateFilter } }] : []),

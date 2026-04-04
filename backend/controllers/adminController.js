@@ -563,10 +563,6 @@ export {
     manageDoctors,
     getSystemSettings,
     updateSystemSettings,
-    createLaboratory,
-    getAllLaboratories,
-    addLabTest,
-    getLabResults,
     createDoctor,
     updateDoctor
 }

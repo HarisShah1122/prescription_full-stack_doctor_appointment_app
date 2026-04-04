@@ -1,12 +1,19 @@
 import express from 'express';
 import {
-    createLaboratory,
-    getAllLaboratories,
-    addLabTest,
-    getLabResults,
     createDoctor,
     updateDoctor
 } from '../controllers/adminController.js';
+import {
+    createLabTest,
+    updateLabTest,
+    getLabTests,
+    generateLabReport,
+    getLabReports,
+    uploadReportPDF,
+    createLabBilling,
+    getLabBillings,
+    updatePaymentStatus
+} from '../controllers/laboratoryController.js';
 import { authorizeRoles, requirePermission, auditLog } from '../middleware/roleAuth.js';
 import authUser from '../middleware/authUser.js';
 import multer from 'multer';
@@ -29,12 +36,6 @@ const router = express.Router();
 // All admin routes require authentication and admin role
 router.use(authUser);
 router.use(authorizeRoles('admin', 'super_admin'));
-
-// Laboratory Management
-router.post('/laboratories/create', auditLog('create_laboratory'), createLaboratory);
-router.get('/laboratories', getAllLaboratories);
-router.post('/laboratories/:labId/tests', auditLog('add_lab_test'), addLabTest);
-router.get('/lab-results', getLabResults);
 
 // Doctor Management (Enhanced)
 router.post('/doctors/create', upload.single('image'), auditLog('create_doctor'), createDoctor);

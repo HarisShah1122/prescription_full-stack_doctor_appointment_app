@@ -26,6 +26,9 @@ import Dashboard from './pages/Dashboard.jsx';
 import SuperAdminDashboard from './pages/SuperAdminDashboard.jsx';
 import AdminDashboard from './pages/AdminDashboard.jsx';
 import AdminLoginTest from './components/AdminLoginTest'
+import RoleIndicator from './components/RoleIndicator.jsx'
+import LaboratoryManagement from './pages/LaboratoryManagement.jsx';
+import DebugRole from './pages/DebugRole.jsx'
 
 // admin pages
 import AllAppointments from './admin/src/pages/Admin/AllAppointments.jsx'
@@ -43,6 +46,7 @@ const App = () => {
       <div className="mx-4 sm:mx-[10%]">
         <ToastContainer />
         <Navbar />
+        <RoleIndicator />
 
         <Routes>
           {/* ✅ Public routes */}
@@ -52,6 +56,7 @@ const App = () => {
           <Route path="/admin-login" element={<Login />} />
           <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact />} />
+          <Route path="/debug-role" element={<DebugRole />} />
 
           {/* ✅ Protected user routes */}
           <Route path="/" element={<ProtectedRoute requiredRole={null}><Home /></ProtectedRoute>} />
@@ -60,6 +65,7 @@ const App = () => {
           <Route path="/appointment/:docId" element={<ProtectedRoute requiredRole={null}><Appointment /></ProtectedRoute>} />
           <Route path="/my-appointments" element={<ProtectedRoute requiredRole={null}><MyAppointments /></ProtectedRoute>} />
           <Route path="/dashboard" element={<ProtectedRoute requiredRole={null}><Dashboard /></ProtectedRoute>} />
+          <Route path="/laboratory" element={<ProtectedRoute requiredRole={null}><LaboratoryManagement /></ProtectedRoute>} />
           <Route path="/my-profile" element={<ProtectedRoute requiredRole={null}><MyProfile /></ProtectedRoute>} />
           <Route path="/verify" element={<ProtectedRoute requiredRole={null}><Verify /></ProtectedRoute>} />
 

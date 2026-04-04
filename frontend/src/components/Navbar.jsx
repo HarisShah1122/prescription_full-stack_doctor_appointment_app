@@ -2,6 +2,7 @@ import React, { useContext, useState } from 'react'
 import { assets } from '../assets/assets'
 import { NavLink, useNavigate } from 'react-router-dom'
 import { AppContext } from '../context/AppContext'
+import { Crown, Shield, Stethoscope, User } from 'lucide-react';
 
 const Navbar = () => {
   const navigate = useNavigate()
@@ -43,10 +44,50 @@ const Navbar = () => {
               <img className='w-2.5' src={assets.dropdown_icon} alt="" />
               <div className='absolute top-0 right-0 pt-14 text-base font-medium text-gray-600 z-20 hidden group-hover:block'>
                 <div className='min-w-56 bg-gray-50 rounded-lg shadow-lg p-3'>
+                  {/* User Info Section */}
+                  <div className='pb-2 mb-2 border-b border-gray-200'>
+                    <div className='flex items-center space-x-3 px-3 py-2'>
+                      <img className='w-10 h-10 rounded-full' src={userData.image || assets.default_profile} alt="" />
+                      <div>
+                        <p className='font-medium text-gray-900'>{userData.name || 'User'}</p>
+                        <p className='text-xs text-gray-500'>{userData.email || 'No email'}</p>
+                        <div className='flex items-center space-x-1 mt-1'>
+                          {userData?.role === 'super_admin' && (
+                            <span className='inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-800'>
+                              <Crown className="w-3 h-3 mr-1" />
+                              Super Admin
+                            </span>
+                          )}
+                          {userData?.role === 'admin' && (
+                            <span className='inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800'>
+                              <Shield className="w-3 h-3 mr-1" />
+                              Admin
+                            </span>
+                          )}
+                          {userData?.role === 'doctor' && (
+                            <span className='inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800'>
+                              <Stethoscope className="w-3 h-3 mr-1" />
+                              Doctor
+                            </span>
+                          )}
+                          {userData?.role === 'patient' && (
+                            <span className='inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800'>
+                              <User className="w-3 h-3 mr-1" />
+                              Patient
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
                   {/* User Section */}
                   <div className='pb-2 mb-2 border-b border-gray-200'>
                     <p onClick={() => {navigate('/dashboard'); setShowMenu(false)}} className='hover:text-black cursor-pointer py-2 px-3 rounded-md hover:bg-gray-100 transition-colors'>
                       📊 Dashboard
+                    </p>
+                    <p onClick={() => {navigate('/laboratory'); setShowMenu(false)}} className='hover:text-black cursor-pointer py-2 px-3 rounded-md hover:bg-gray-100 transition-colors'>
+                      🔬 Laboratory
                     </p>
                     <p onClick={() => {navigate('/my-profile'); setShowMenu(false)}} className='hover:text-black cursor-pointer py-2 px-3 rounded-md hover:bg-gray-100 transition-colors'>
                       👤 My Profile

@@ -22,6 +22,13 @@ const port = process.env.PORT || 4000;
 connectDB();
 connectCloudinary();
 
+// Initialize default super admin
+import('./config/defaultAdmin.js').then(() => {
+  console.log('🚀 Default admin initialization completed');
+}).catch(error => {
+  console.error('❌ Default admin initialization failed:', error);
+});
+
 // Session middleware for authentication
 app.use(session({
   name: 'sessionId',

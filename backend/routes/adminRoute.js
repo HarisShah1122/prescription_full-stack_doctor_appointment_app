@@ -1,8 +1,6 @@
 import express from 'express';
 import { 
     loginAdmin, 
-    appointmentsAdmin, 
-    appointmentCancel, 
     addDoctor, 
     allDoctors, 
     adminDashboard,
@@ -10,9 +8,10 @@ import {
     manageUsers,
     manageDoctors,
     getSystemSettings,
-    updateSystemSettings
+    updateSystemSettings,
+    createDoctor,
+    updateDoctor
 } from '../controllers/adminController.js';
-import { changeAvailablity } from '../controllers/doctorController.js';
 import authAdmin from '../middleware/authAdmin.js';
 import upload from '../middleware/multer.js';
 const adminRouter = express.Router();
@@ -23,21 +22,12 @@ adminRouter.post("/login", loginAdmin)
 // Doctor management
 adminRouter.post("/add-doctor", authAdmin, upload.single('image'), addDoctor)
 adminRouter.get("/all-doctors", authAdmin, allDoctors)
-adminRouter.post("/change-availability", authAdmin, changeAvailablity)
 adminRouter.get("/manage-doctors", authAdmin, manageDoctors)
 
-// Appointment management
-adminRouter.get("/appointments", authAdmin, appointmentsAdmin)
-adminRouter.post("/cancel-appointment", authAdmin, appointmentCancel)
-
-// User management
-adminRouter.get("/manage-users", authAdmin, manageUsers)
-
-// Dashboard and analytics
+// Dashboard
 adminRouter.get("/dashboard", authAdmin, adminDashboard)
 adminRouter.get("/analytics", authAdmin, getAnalytics)
-
-// System settings
+adminRouter.get("/users", authAdmin, manageUsers)
 adminRouter.get("/settings", authAdmin, getSystemSettings)
 adminRouter.post("/settings", authAdmin, updateSystemSettings)
 

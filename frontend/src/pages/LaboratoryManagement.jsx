@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { toast } from 'react-toastify';
+import { AppContext } from '../context/AppContext';
 import { 
   TestTube, 
   FileText, 
@@ -27,6 +28,10 @@ const LaboratoryManagement = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
   
+  // Get user role from context
+  const { userData } = useContext(AppContext);
+  const userRole = userData?.role || 'patient';
+  
   // Test Management State
   const [tests, setTests] = useState([]);
   const [showTestForm, setShowTestForm] = useState(false);
@@ -48,6 +53,11 @@ const LaboratoryManagement = () => {
     pendingReports: 0,
     pendingBilling: 0
   });
+
+  // Check if user can perform certain actions
+  const canManageLab = ['admin', 'super_admin', 'lab_technician'].includes(userRole);
+  const canViewReports = ['admin', 'super_admin', 'doctor', 'lab_technician', 'patient'].includes(userRole);
+  const canViewBilling = ['admin', 'super_admin', 'patient'].includes(userRole);
 
   useEffect(() => {
     fetchLaboratoryData();
@@ -217,14 +227,19 @@ const LaboratoryManagement = () => {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold text-gray-900">Test Management</h2>
-        <button
-          onClick={() => setShowTestForm(true)}
-          className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-        >
-          <Plus className="w-4 h-4 mr-2" />
-          Add Test
-        </button>
+        <div>
+          <h2 className="text-2xl font-bold text-gray-900">Laboratory Management</h2>
+          <p className="text-sm text-gray-600">View and manage laboratory services</p>
+        </div>
+        {canManageLab && (
+          <button
+            onClick={() => setShowTestForm(true)}
+            className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Add Test
+          </button>
+        )}
       </div>
 
       {/* Search and Filter */}
@@ -511,7 +526,7 @@ const LaboratoryManagement = () => {
       <div className="bg-white rounded-lg shadow-md">
         <div className="border-b border-gray-200">
           <nav className="flex space-x-8 px-6" aria-label="Tabs">
-            {['tests', 'reports', 'billing'].map((tab) => (
+            {['tests'].map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
@@ -524,6 +539,32 @@ const LaboratoryManagement = () => {
                 {tab}
               </button>
             ))}
+            {canViewReports && (
+              <button
+                key="reports"
+                onClick={() => setActiveTab('reports')}
+                className={`py-4 px-1 border-b-2 font-medium text-sm capitalize ${
+                  activeTab === 'reports'
+                    ? 'border-blue-500 text-blue-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                reports
+              </button>
+            )}
+            {canViewBilling && (
+              <button
+                key="billing"
+                onClick={() => setActiveTab('billing')}
+                className={`py-4 px-1 border-b-2 font-medium text-sm capitalize ${
+                  activeTab === 'billing'
+                    ? 'border-blue-500 text-blue-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                billing
+              </button>
+            )}
           </nav>
         </div>
 
