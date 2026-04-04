@@ -23,10 +23,11 @@ import MyProfile from './pages/MyProfile'
 import Verify from './pages/Verify'
 import TestConnection from './pages/TestConnection'
 import Dashboard from './pages/Dashboard.jsx';
+import SuperAdminDashboard from './pages/SuperAdminDashboard.jsx';
+import AdminDashboard from './pages/AdminDashboard.jsx';
 import AdminLoginTest from './components/AdminLoginTest'
 
 // admin pages
-import AdminDashboard from './components/AdminDashboard'
 import AllAppointments from './admin/src/pages/Admin/AllAppointments.jsx'
 import AddDoctor from './admin/src/pages/Admin/AddDoctor.jsx'
 import DoctorList from './admin/src/pages/Admin/DoctorsList.jsx'
@@ -64,6 +65,7 @@ const App = () => {
 
           {/* ✅ Protected admin routes */}
           <Route path="/admin-dashboard" element={<ProtectedRoute adminOnly><AdminDashboard /></ProtectedRoute>} />
+          <Route path="/super-admin-dashboard" element={<ProtectedRoute requiredRole="super_admin"><SuperAdminDashboard /></ProtectedRoute>} />
           <Route path="/all-appointments" element={<ProtectedRoute adminOnly><><Sidebar /><AllAppointments /></></ProtectedRoute>} />
           <Route path="/add-doctor" element={<ProtectedRoute adminOnly><><Sidebar /><AddDoctor /></></ProtectedRoute>} />
           <Route path="/doctor-list" element={<ProtectedRoute adminOnly><><Sidebar /><DoctorList /></></ProtectedRoute>} />

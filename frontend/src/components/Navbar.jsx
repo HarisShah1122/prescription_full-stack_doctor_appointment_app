@@ -42,11 +42,66 @@ const Navbar = () => {
               <img className='w-8 rounded-full' src={userData.image || assets.default_profile} alt="" />
               <img className='w-2.5' src={assets.dropdown_icon} alt="" />
               <div className='absolute top-0 right-0 pt-14 text-base font-medium text-gray-600 z-20 hidden group-hover:block'>
-                <div className='min-w-48 bg-gray-50 rounded flex flex-col gap-4 p-4'>
-                  <p onClick={() => {navigate('/dashboard'); setShowMenu(false)}} className='hover:text-black cursor-pointer'>Dashboard</p>
-                  <p onClick={() => {navigate('/my-profile'); setShowMenu(false)}} className='hover:text-black cursor-pointer'>My Profile</p>
-                  <p onClick={() => {navigate('/my-appointments'); setShowMenu(false)}} className='hover:text-black cursor-pointer'>My Appointments</p>
-                  <p onClick={handleLogout} className='hover:text-black cursor-pointer'>Logout</p>
+                <div className='min-w-56 bg-gray-50 rounded-lg shadow-lg p-3'>
+                  {/* User Section */}
+                  <div className='pb-2 mb-2 border-b border-gray-200'>
+                    <p onClick={() => {navigate('/dashboard'); setShowMenu(false)}} className='hover:text-black cursor-pointer py-2 px-3 rounded-md hover:bg-gray-100 transition-colors'>
+                      📊 Dashboard
+                    </p>
+                    <p onClick={() => {navigate('/my-profile'); setShowMenu(false)}} className='hover:text-black cursor-pointer py-2 px-3 rounded-md hover:bg-gray-100 transition-colors'>
+                      👤 My Profile
+                    </p>
+                    <p onClick={() => {navigate('/my-appointments'); setShowMenu(false)}} className='hover:text-black cursor-pointer py-2 px-3 rounded-md hover:bg-gray-100 transition-colors'>
+                      📅 My Appointments
+                    </p>
+                  </div>
+
+                  {/* Admin Section */}
+                  {(userData?.role === 'super_admin' || userData?.role === 'admin') && (
+                    <div className='pb-2 mb-2 border-b border-gray-200'>
+                      <p className='text-xs text-gray-500 uppercase tracking-wider px-3 py-1 font-semibold'>Admin Panel</p>
+                      <p onClick={() => {navigate(userData?.role === 'super_admin' ? '/super-admin-dashboard' : '/admin-dashboard'); setShowMenu(false)}} className='hover:text-black cursor-pointer py-2 px-3 rounded-md hover:bg-blue-50 transition-colors font-medium text-blue-600'>
+                        {userData?.role === 'super_admin' ? '⚡ Super Admin Panel' : '🏥 Admin Panel'}
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Development Section */}
+                  {process.env.NODE_ENV === 'development' && (
+                    <div className='pb-2 mb-2 border-b border-gray-200'>
+                      <p className='text-xs text-gray-500 uppercase tracking-wider px-3 py-1 font-semibold'>Development</p>
+                      <div className='space-y-1'>
+                        <p onClick={() => {
+                          const testUserData = { ...userData, role: 'super_admin' };
+                          localStorage.setItem('userData', JSON.stringify(testUserData));
+                          window.location.reload();
+                        }} className='text-xs text-purple-600 hover:text-purple-800 hover:bg-purple-50 cursor-pointer py-1 px-3 rounded transition-colors'>
+                          🎯 Switch to Super Admin
+                        </p>
+                        <p onClick={() => {
+                          const testUserData = { ...userData, role: 'admin' };
+                          localStorage.setItem('userData', JSON.stringify(testUserData));
+                          window.location.reload();
+                        }} className='text-xs text-blue-600 hover:text-blue-800 hover:bg-blue-50 cursor-pointer py-1 px-3 rounded transition-colors'>
+                          👨‍⚕️ Switch to Admin
+                        </p>
+                        <p onClick={() => {
+                          const testUserData = { ...userData, role: 'patient' };
+                          localStorage.setItem('userData', JSON.stringify(testUserData));
+                          window.location.reload();
+                        }} className='text-xs text-green-600 hover:text-green-800 hover:bg-green-50 cursor-pointer py-1 px-3 rounded transition-colors'>
+                          🧑 Switch to Patient
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Logout Section */}
+                  <div>
+                    <p onClick={handleLogout} className='text-red-600 hover:text-red-800 hover:bg-red-50 cursor-pointer py-2 px-3 rounded-md transition-colors font-medium'>
+                      🚪 Logout
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
@@ -67,10 +122,60 @@ const Navbar = () => {
             <NavLink onClick={() => setShowMenu(false)} to='/contact' ><p className='px-4 py-2 rounded full inline-block'>CONTACT</p></NavLink>
             {isAuthenticated && (
               <>
-                <NavLink onClick={() => setShowMenu(false)} to='/dashboard'><p className='px-4 py-2 rounded full inline-block'>DASHBOARD</p></NavLink>
-                <NavLink onClick={() => setShowMenu(false)} to='/my-profile'><p className='px-4 py-2 rounded full inline-block'>MY PROFILE</p></NavLink>
-                <NavLink onClick={() => setShowMenu(false)} to='/my-appointments'><p className='px-4 py-2 rounded full inline-block'>MY APPOINTMENTS</p></NavLink>
-                <p onClick={() => {handleLogout(); setShowMenu(false)}} className='px-4 py-2 rounded full inline-block cursor-pointer hover:bg-gray-100'>LOGOUT</p>
+                {/* User Section */}
+                <div className='pb-2 mb-2 border-b border-gray-200'>
+                  <p className='text-xs text-gray-500 uppercase tracking-wider px-5 py-1 font-semibold'>User Menu</p>
+                  <NavLink onClick={() => setShowMenu(false)} to='/dashboard'><p className='px-5 py-2 rounded inline-block hover:bg-gray-100 transition-colors'>📊 Dashboard</p></NavLink>
+                  <NavLink onClick={() => setShowMenu(false)} to='/my-profile'><p className='px-5 py-2 rounded inline-block hover:bg-gray-100 transition-colors'>👤 My Profile</p></NavLink>
+                  <NavLink onClick={() => setShowMenu(false)} to='/my-appointments'><p className='px-5 py-2 rounded inline-block hover:bg-gray-100 transition-colors'>📅 My Appointments</p></NavLink>
+                </div>
+
+                {/* Admin Section */}
+                {(userData?.role === 'super_admin' || userData?.role === 'admin') && (
+                  <div className='pb-2 mb-2 border-b border-gray-200'>
+                    <p className='text-xs text-gray-500 uppercase tracking-wider px-5 py-1 font-semibold'>Admin Panel</p>
+                    <NavLink onClick={() => setShowMenu(false)} to={userData?.role === 'super_admin' ? '/super-admin-dashboard' : '/admin-dashboard'}>
+                      <p className='px-5 py-2 rounded inline-block hover:bg-blue-50 transition-colors font-medium text-blue-600'>
+                        {userData?.role === 'super_admin' ? '⚡ Super Admin Panel' : '🏥 Admin Panel'}
+                      </p>
+                    </NavLink>
+                  </div>
+                )}
+
+                {/* Development Section */}
+                {process.env.NODE_ENV === 'development' && (
+                  <div className='pb-2 mb-2 border-b border-gray-200'>
+                    <p className='text-xs text-gray-500 uppercase tracking-wider px-5 py-1 font-semibold'>Development</p>
+                    <div className='space-y-1'>
+                      <p onClick={() => {
+                        const testUserData = { ...userData, role: 'super_admin' };
+                        localStorage.setItem('userData', JSON.stringify(testUserData));
+                        window.location.reload();
+                      }} className='text-xs text-purple-600 hover:text-purple-800 hover:bg-purple-50 cursor-pointer px-5 py-2 rounded transition-colors'>
+                        🎯 Switch to Super Admin
+                      </p>
+                      <p onClick={() => {
+                        const testUserData = { ...userData, role: 'admin' };
+                        localStorage.setItem('userData', JSON.stringify(testUserData));
+                        window.location.reload();
+                      }} className='text-xs text-blue-600 hover:text-blue-800 hover:bg-blue-50 cursor-pointer px-5 py-2 rounded transition-colors'>
+                        👨‍⚕️ Switch to Admin
+                      </p>
+                      <p onClick={() => {
+                        const testUserData = { ...userData, role: 'patient' };
+                        localStorage.setItem('userData', JSON.stringify(testUserData));
+                        window.location.reload();
+                      }} className='text-xs text-green-600 hover:text-green-800 hover:bg-green-50 cursor-pointer px-5 py-2 rounded transition-colors'>
+                        🧑 Switch to Patient
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Logout Section */}
+                <div>
+                  <p onClick={() => {handleLogout(); setShowMenu(false)}} className='px-5 py-2 rounded inline-block cursor-pointer hover:bg-red-50 text-red-600 font-medium transition-colors'>🚪 Logout</p>
+                </div>
               </>
             )}
             {!isAuthenticated && (

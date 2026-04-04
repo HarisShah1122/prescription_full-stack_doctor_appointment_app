@@ -46,6 +46,7 @@ ChartJS.register(
 const Dashboard = () => {
   const { backendUrl, token, userData } = useContext(AppContext);
   const [loading, setLoading] = useState(true);
+  const [usingMockData, setUsingMockData] = useState(false);
   const [dashboardData, setDashboardData] = useState({
     stats: {
       totalAppointments: 0,
@@ -81,40 +82,170 @@ const Dashboard = () => {
         headers: { Authorization: `Bearer ${token}` }
       });
 
+      let processedData = {
+        stats: {
+          totalAppointments: 0,
+          todayAppointments: 0,
+          completedAppointments: 0,
+          cancelledAppointments: 0,
+          totalRevenue: 0,
+          activeDoctors: 0,
+          totalUsers: 0,
+          pendingAppointments: 0
+        },
+        recentAppointments: [],
+        weeklyData: [],
+        monthlyRevenue: [],
+        doctorStats: [],
+        upcomingAppointments: []
+      };
+
       if (statsResponse.ok && appointmentsResponse.ok) {
         const stats = await statsResponse.json();
         const appointments = await appointmentsResponse.json();
         
-        // Process data
-        const processedData = {
-          stats: {
-            totalAppointments: appointments.appointments?.length || 0,
-            todayAppointments: appointments.appointments?.filter(apt => {
-              const today = new Date().toDateString();
-              return new Date(apt.date).toDateString() === today;
-            }).length || 0,
-            completedAppointments: appointments.appointments?.filter(apt => !apt.cancelled).length || 0,
-            cancelledAppointments: appointments.appointments?.filter(apt => apt.cancelled).length || 0,
-            totalRevenue: appointments.appointments?.filter(apt => !apt.cancelled).reduce((sum, apt) => sum + (apt.amount || 0), 0) || 0,
-            activeDoctors: 12, // Static for now
-            totalUsers: 150, // Static for now
-            pendingAppointments: appointments.appointments?.filter(apt => !apt.cancelled && new Date(apt.slotDate) >= new Date()).length || 0
-          },
-          recentAppointments: appointments.appointments?.slice(0, 5) || [],
-          weeklyData: generateWeeklyData(appointments.appointments || []),
-          monthlyRevenue: generateMonthlyRevenue(appointments.appointments || []),
-          doctorStats: generateDoctorStats(appointments.appointments || []),
-          upcomingAppointments: appointments.appointments?.filter(apt => !apt.cancelled && new Date(apt.slotDate) >= new Date()).slice(0, 3) || []
-        };
-        
-        setDashboardData(processedData);
+        // Process real data if available
+        if (stats.success || appointments.success) {
+          const realData = {
+            stats: {
+              totalAppointments: appointments.appointments?.length || 0,
+              todayAppointments: appointments.appointments?.filter(apt => {
+                const today = new Date().toDateString();
+                return new Date(apt.date).toDateString() === today;
+              }).length || 0,
+              completedAppointments: appointments.appointments?.filter(apt => !apt.cancelled).length || 0,
+              cancelledAppointments: appointments.appointments?.filter(apt => apt.cancelled).length || 0,
+              totalRevenue: appointments.appointments?.filter(apt => !apt.cancelled).reduce((sum, apt) => sum + (apt.amount || 0), 0) || 0,
+              activeDoctors: stats.stats?.activeDoctors || 0,
+              totalUsers: stats.stats?.totalUsers || 0,
+              pendingAppointments: appointments.appointments?.filter(apt => !apt.cancelled && new Date(apt.slotDate) >= new Date()).length || 0
+            },
+            recentAppointments: appointments.appointments?.slice(0, 5) || [],
+            weeklyData: generateWeeklyData(appointments.appointments || []),
+            monthlyRevenue: generateMonthlyRevenue(appointments.appointments || []),
+            doctorStats: generateDoctorStats(appointments.appointments || []),
+            upcomingAppointments: appointments.appointments?.filter(apt => !apt.cancelled && new Date(apt.slotDate) >= new Date()).slice(0, 3) || []
+          };
+          
+          // Use real data if it has content, otherwise use mock data
+          if (realData.stats.totalAppointments > 0 || realData.stats.activeDoctors > 0) {
+            processedData = realData;
+            setUsingMockData(false);
+          } else {
+            processedData = getMockDashboardData();
+            setUsingMockData(true);
+          }
+        } else {
+          processedData = getMockDashboardData();
+          setUsingMockData(true);
+        }
+      } else {
+        // If API calls fail, use mock data
+        processedData = getMockDashboardData();
+        setUsingMockData(true);
       }
+      
+      setDashboardData(processedData);
+      
     } catch (error) {
       console.error('Dashboard error:', error);
-      toast.error('Failed to load dashboard data');
+      // Use mock data on error
+      setDashboardData(getMockDashboardData());
+      setUsingMockData(true);
     } finally {
       setLoading(false);
     }
+  };
+
+  // Mock data generator
+  const getMockDashboardData = () => {
+    return {
+      stats: {
+        totalAppointments: 156,
+        todayAppointments: 12,
+        completedAppointments: 134,
+        cancelledAppointments: 22,
+        totalRevenue: 45680,
+        activeDoctors: 12,
+        totalUsers: 892,
+        pendingAppointments: 18
+      },
+      recentAppointments: [
+        {
+          _id: '1',
+          docData: { name: 'Dr. Ahmed Khan' },
+          date: new Date().toISOString(),
+          slotTime: '10:00 AM',
+          amount: 1500,
+          cancelled: false
+        },
+        {
+          _id: '2',
+          docData: { name: 'Dr. Fatima Zahra' },
+          date: new Date(Date.now() - 86400000).toISOString(),
+          slotTime: '2:00 PM',
+          amount: 2000,
+          cancelled: false
+        },
+        {
+          _id: '3',
+          docData: { name: 'Dr. Ayesha Siddiqui' },
+          date: new Date(Date.now() - 172800000).toISOString(),
+          slotTime: '11:30 AM',
+          amount: 1200,
+          cancelled: true
+        }
+      ],
+      weeklyData: [
+        { day: 'Mon', appointments: 18, completed: 15 },
+        { day: 'Tue', appointments: 22, completed: 20 },
+        { day: 'Wed', appointments: 15, completed: 14 },
+        { day: 'Thu', appointments: 25, completed: 23 },
+        { day: 'Fri', appointments: 20, completed: 18 },
+        { day: 'Sat', appointments: 12, completed: 11 },
+        { day: 'Sun', appointments: 8, completed: 7 }
+      ],
+      monthlyRevenue: [
+        { month: 'Jan', revenue: 3200 },
+        { month: 'Feb', revenue: 4100 },
+        { month: 'Mar', revenue: 3800 },
+        { month: 'Apr', revenue: 5200 },
+        { month: 'May', revenue: 4600 },
+        { month: 'Jun', revenue: 5800 }
+      ],
+      doctorStats: [
+        { name: 'Dr. Ahmed Khan', appointments: 45, completed: 42 },
+        { name: 'Dr. Fatima Zahra', appointments: 38, completed: 36 },
+        { name: 'Dr. Ayesha Siddiqui', appointments: 32, completed: 30 },
+        { name: 'Dr. Muhammad Ali', appointments: 28, completed: 26 }
+      ],
+      upcomingAppointments: [
+        {
+          _id: '4',
+          docData: { name: 'Dr. Sara Hassan' },
+          slotDate: new Date(Date.now() + 86400000).toISOString(),
+          slotTime: '9:00 AM',
+          amount: 2500,
+          cancelled: false
+        },
+        {
+          _id: '5',
+          docData: { name: 'Dr. Omar Farooq' },
+          slotDate: new Date(Date.now() + 172800000).toISOString(),
+          slotTime: '3:30 PM',
+          amount: 1500,
+          cancelled: false
+        },
+        {
+          _id: '6',
+          docData: { name: 'Dr. Hira Tariq' },
+          slotDate: new Date(Date.now() + 259200000).toISOString(),
+          slotTime: '11:00 AM',
+          amount: 1500,
+          cancelled: false
+        }
+      ]
+    };
   };
 
   const generateWeeklyData = (appointments) => {
@@ -239,6 +370,14 @@ const Dashboard = () => {
             <div>
               <h1 className="text-3xl font-bold text-gray-900">Medical Dashboard</h1>
               <p className="text-gray-500 mt-1">Welcome back, {userData?.name || 'User'}</p>
+              {usingMockData && (
+                <div className="mt-2">
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                    <AlertCircle className="w-3 h-3 mr-1" />
+                    Using sample data for demonstration
+                  </span>
+                </div>
+              )}
             </div>
             <div className="flex items-center space-x-4">
               <div className="text-right">

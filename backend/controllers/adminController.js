@@ -1,6 +1,8 @@
 import jwt from "jsonwebtoken";
 import appointmentModel from "../models/appointmentModel.js";
 import doctorModel from "../models/doctorModel.js";
+import adminModel from "../models/adminModel.js";
+import { laboratoryModel, labTestModel, labResultModel } from "../models/laboratoryModel.js";
 import bcrypt from "bcrypt";
 import validator from "validator";
 import { v2 as cloudinary } from "cloudinary";
@@ -409,12 +411,150 @@ const updateSystemSettings = async (req, res) => {
         console.log(error);
         res.json({ success: false, message: error.message });
     }
-}
+};
+
+// Get Lab Results
+const getLabResults = async (req, res) => {
+    try {
+        const { status, patientId, labId } = req.query;
+        
+        const filter = {};
+        if (status) filter.status = status;
+        if (patientId) filter.patientId = patientId;
+        if (labId) filter.labId = labId;
+
+        const results = await labResultModel.find(filter)
+            .populate('patientId', 'name email')
+            .populate('doctorId', 'name speciality')
+            .populate('labId', 'name labCode')
+            .populate('testId', 'testName testCode')
+            .sort({ created: -1 });
+
+        res.json({
+            success: true,
+            data: results,
+            count: results.length
+        });
+
+    } catch (error) {
+        console.error("Get lab results error:", error);
+        res.status(500).json({
+            success: false,
+            message: "Failed to fetch lab results",
+            error: error.message
+        });
+    }
+};
+
+// Enhanced Doctor Management
+const createDoctor = async (req, res) => {
+    try {
+        const { name, email, password, speciality, degree, experience, about, fees, address, available } = req.body;
+
+        const existingDoctor = await doctorModel.findOne({ email });
+        if (existingDoctor) {
+            return res.status(400).json({
+                success: false,
+                message: "Doctor with this email already exists"
+            });
+        }
+
+        // Handle image upload if provided
+        let imageUrl = '';
+        if (req.file) {
+            const imageUpload = await cloudinary.uploader.upload(req.file.path, {
+                resource_type: 'image',
+                folder: 'doctors'
+            });
+            imageUrl = imageUpload.secure_url;
+        }
+
+        const doctor = new doctorModel({
+            name,
+            email,
+            password,
+            speciality,
+            degree,
+            experience,
+            about,
+            fees,
+            address,
+            available: available !== false,
+            image: imageUrl,
+            date: Date.now()
+        });
+
+        await doctor.save();
+
+        res.status(201).json({
+            success: true,
+            message: "Doctor created successfully",
+            data: {
+                id: doctor._id,
+                name: doctor.name,
+                email: doctor.email,
+                speciality: doctor.speciality,
+                degree: doctor.degree,
+                experience: doctor.experience,
+                fees: doctor.fees,
+                available: doctor.available
+            }
+        });
+
+    } catch (error) {
+        console.error("Create doctor error:", error);
+        res.status(500).json({
+            success: false,
+            message: "Failed to create doctor",
+            error: error.message
+        });
+    }
+};
+
+// Update Doctor
+const updateDoctor = async (req, res) => {
+    try {
+        const { doctorId } = req.params;
+        const updates = req.body;
+
+        const doctor = await doctorModel.findById(doctorId);
+        if (!doctor) {
+            return res.status(404).json({
+                success: false,
+                message: "Doctor not found"
+            });
+        }
+
+        // Handle image upload if provided
+        if (req.file) {
+            const imageUpload = await cloudinary.uploader.upload(req.file.path, {
+                resource_type: 'image',
+                folder: 'doctors'
+            });
+            updates.image = imageUpload.secure_url;
+        }
+
+        Object.assign(doctor, updates);
+        await doctor.save();
+
+        res.json({
+            success: true,
+            message: "Doctor updated successfully",
+            data: doctor
+        });
+
+    } catch (error) {
+        console.error("Update doctor error:", error);
+        res.status(500).json({
+            success: false,
+            message: "Failed to update doctor",
+            error: error.message
+        });
+    }
+};
 
 export {
     loginAdmin,
-    appointmentsAdmin,
-    appointmentCancel,
     addDoctor,
     allDoctors,
     adminDashboard,
@@ -422,5 +562,11 @@ export {
     manageUsers,
     manageDoctors,
     getSystemSettings,
-    updateSystemSettings
+    updateSystemSettings,
+    createLaboratory,
+    getAllLaboratories,
+    addLabTest,
+    getLabResults,
+    createDoctor,
+    updateDoctor
 }
