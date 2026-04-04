@@ -15,6 +15,7 @@ const Login = () => {
 
   // Check if this is admin login based on URL
   const isAdminLogin = location.pathname === "/admin-login";
+  const isSuperAdminLogin = location.pathname === "/super-admin-login";
 
   const onSubmitHandler = async (e) => {
     e.preventDefault();
@@ -40,20 +41,100 @@ const Login = () => {
         }
       } else {
         console.log('🔐 Attempting login for:', email);
-        result = await login(email, password, isAdminLogin);
-        if (result.success) {
-          console.log('✅ Login successful, redirecting to main page');
-          toast.success("Login successful!");
-          // Navigate to main page after successful login
-          navigate(isAdminLogin ? "/admin-dashboard" : "/", { replace: true });
+        
+        // Handle different login types
+        if (isSuperAdminLogin) {
+          // Super Admin login
+          const response = await fetch(`${backendUrl}/api/super-admin/login`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ email, password })
+          });
+          
+          result = await response.json();
+          
+          if (result.success) {
+            console.log('✅ Super Admin login successful');
+            toast.success("Super Admin login successful!");
+            
+            // Save token and user data
+            localStorage.setItem('token', result.data.token);
+            localStorage.setItem('userData', JSON.stringify(result.data.user));
+            
+            navigate('/super-admin-dashboard', { replace: true });
+          }
+        } else if (isAdminLogin) {
+          // Admin login (check both admin and super admin)
+          const adminResponse = await fetch(`${backendUrl}/api/admin/login`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ email, password })
+          });
+          
+          const adminResult = await adminResponse.json();
+          
+          if (adminResult.success) {
+            console.log('✅ Admin login successful');
+            toast.success("Admin login successful!");
+            
+            // Save token and user data
+            localStorage.setItem('token', adminResult.data.token);
+            localStorage.setItem('userData', JSON.stringify({
+              ...adminResult.data.user,
+              role: 'admin'
+            }));
+            
+            navigate('/admin-dashboard', { replace: true });
+          } else {
+            // Try super admin login as fallback
+            const superAdminResponse = await fetch(`${backendUrl}/api/super-admin/login`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({ email, password })
+            });
+            
+            const superAdminResult = await superAdminResponse.json();
+            
+            if (superAdminResult.success) {
+              console.log('✅ Super Admin login successful (fallback)');
+              toast.success("Super Admin login successful!");
+              
+              // Save token and user data
+              localStorage.setItem('token', superAdminResult.data.token);
+              localStorage.setItem('userData', JSON.stringify(superAdminResult.data.user));
+              
+              navigate('/super-admin-dashboard', { replace: true });
+            } else {
+              result = { success: false, message: 'Invalid credentials' };
+            }
+          }
         } else {
-          console.log('❌ Login failed:', result.error);
-          toast.error(result.error || "Login failed");
+          // Regular user login
+          result = await login(email, password, false);
+          if (result.success) {
+            console.log('✅ User login successful, redirecting to main page');
+            toast.success("Login successful!");
+            // Navigate to main page after successful login
+            navigate("/", { replace: true });
+          }
+        }
+        
+        if (result.success) {
+          console.log('✅ Login successful');
+        } else {
+          console.log('❌ Login failed:', result.message);
+          toast.error(result.message || 'Login failed');
         }
       }
-    } catch (err) {
-      console.error("💥 Login/Signup error:", err);
-      toast.error(err.message || "An unexpected error occurred");
+    } catch (error) {
+      console.error('Login error:', error);
+      toast.error('Login failed. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -63,9 +144,9 @@ const Login = () => {
     <form onSubmit={onSubmitHandler} className="min-h-[80vh] flex items-center">
       <div className="flex flex-col gap-3 m-auto items-start p-8 min-w-[340px] sm:min-w-96 border rounded-xl text-[#5E5E5E] text-sm shadow-lg">
         <p className="text-2xl font-semibold">
-          {isAdminLogin ? "Admin Login" : state === "Sign Up" ? "Create Account" : "Login"}
+          {isSuperAdminLogin ? "Super Admin Login" : isAdminLogin ? "Admin Login" : state === "Sign Up" ? "Create Account" : "Login"}
         </p>
-        <p>Please {isAdminLogin ? "log in as admin" : state === "Sign Up" ? "sign up" : "log in"} to {isAdminLogin ? "manage the hospital" : "book appointment"}</p>
+        <p>Please {isSuperAdminLogin ? "log in as super admin" : isAdminLogin ? "log in as admin" : state === "Sign Up" ? "sign up" : "log in"} to {isSuperAdminLogin ? "manage the entire system" : isAdminLogin ? "manage the hospital" : "book appointment"}</p>
 
         {state === "Sign Up" && (
           <div className="w-full">

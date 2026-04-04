@@ -54,6 +54,7 @@ const App = () => {
           <Route path="/test-connection" element={<TestConnection />} />
           <Route path="/login" element={<Login />} />
           <Route path="/admin-login" element={<Login />} />
+          <Route path="/super-admin-login" element={<Login />} />
           <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/debug-role" element={<DebugRole />} />
