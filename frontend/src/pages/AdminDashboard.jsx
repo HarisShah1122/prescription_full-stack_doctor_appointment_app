@@ -17,6 +17,7 @@ import {
   DollarSign,
   Clock
 } from 'lucide-react';
+import LaboratoryManagement from './LaboratoryManagement.jsx';
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -98,7 +99,10 @@ const AdminDashboard = () => {
     { id: 'dashboard', label: 'Dashboard', icon: Activity },
     { id: 'doctors', label: 'Doctor Management', icon: Stethoscope },
     { id: 'laboratories', label: 'Laboratory Management', icon: Building },
+    { id: 'lab-management', label: 'Lab Operations', icon: TestTube },
     { id: 'lab-tests', label: 'Lab Tests & Results', icon: TestTube },
+    { id: 'lab-reports', label: 'Lab Reports', icon: FileText },
+    { id: 'lab-billing', label: 'Lab Billing', icon: DollarSign },
     { id: 'appointments', label: 'Appointments', icon: Calendar },
     { id: 'reports', label: 'Reports', icon: FileText }
   ];
@@ -110,9 +114,15 @@ const AdminDashboard = () => {
       case 'doctors':
         return <DoctorManagement doctors={doctors} />;
       case 'laboratories':
-        return <LaboratoryManagement laboratories={laboratories} />;
+        return <LocalLaboratoryManagement laboratories={laboratories} />;
+      case 'lab-management':
+        return <LaboratoryManagement />;
       case 'lab-tests':
         return <LabTestManagement labResults={labResults} />;
+      case 'lab-reports':
+        return <LabReportManagement labResults={labResults} />;
+      case 'lab-billing':
+        return <LabBillingManagement billings={billings} />;
       case 'appointments':
         return <AppointmentManagement />;
       case 'reports':
@@ -322,8 +332,8 @@ const DoctorManagement = ({ doctors }) => {
   );
 };
 
-// Laboratory Management Component
-const LaboratoryManagement = ({ laboratories }) => {
+// Laboratory Management Component (Local)
+const LocalLaboratoryManagement = ({ laboratories }) => {
   return (
     <div className="bg-white rounded-xl shadow-lg p-6">
       <div className="flex justify-between items-center mb-6">
@@ -428,6 +438,20 @@ const LabTestManagement = ({ labResults }) => {
 };
 
 // Placeholder components
+const LabReportManagement = ({ labResults }) => (
+  <div className="bg-white rounded-xl shadow-lg p-6">
+    <h3 className="text-xl font-semibold mb-4">Lab Reports Management</h3>
+    <p className="text-gray-600">Generate and manage laboratory reports</p>
+  </div>
+);
+
+const LabBillingManagement = ({ billings }) => (
+  <div className="bg-white rounded-xl shadow-lg p-6">
+    <h3 className="text-xl font-semibold mb-4">Lab Billing Management</h3>
+    <p className="text-gray-600">Manage laboratory billing and payments</p>
+  </div>
+);
+
 const AppointmentManagement = () => (
   <div className="bg-white rounded-xl shadow-lg p-6">
     <h3 className="text-xl font-semibold mb-4">Appointment Management</h3>

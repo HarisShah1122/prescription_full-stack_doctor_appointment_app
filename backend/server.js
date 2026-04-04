@@ -12,6 +12,7 @@ import doctorDashboardRouter from "./routes/doctorDashboardRoute.js";
 import dashboardRouter from "./routes/dashboardRoute.js";
 import superAdminRouter from "./routes/superAdminRoute.js";
 import adminLabRouter from "./routes/adminLabRoute.js";
+import laboratoryRouter from "./routes/laboratoryRoute.js";
 
 // Initialize App
 const app = express();
@@ -67,6 +68,7 @@ app.use("/api/doctor", doctorRouter);
 app.use("/api/dashboard", dashboardRouter);
 app.use("/api/super-admin", superAdminRouter);
 app.use("/api/admin-lab", adminLabRouter);
+app.use("/api/laboratory", laboratoryRouter);
 app.use("/api/doctor", doctorDashboardRouter);
 
 // Health check endpoint
